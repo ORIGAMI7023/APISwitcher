@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:APISwitcher"
         mc:Ignorable="d"
         Title="Claude Code 账号切换工具" Height="500" Width="700"
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        Icon="{StaticResource AppIcon}">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>

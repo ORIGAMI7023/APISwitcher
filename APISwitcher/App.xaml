@@ -10,6 +10,29 @@
         <converters:ActiveBorderConverter x:Key="ActiveBorderConverter"/>
         <converters:ActiveForegroundConverter x:Key="ActiveForegroundConverter"/>
 
+        <!-- Application Icon -->
+        <DrawingImage x:Key="AppIcon">
+            <DrawingImage.Drawing>
+                <DrawingGroup>
+                    <!-- Background Circle -->
+                    <GeometryDrawing Brush="#4F83FF">
+                        <GeometryDrawing.Geometry>
+                            <EllipseGeometry Center="16,16" RadiusX="15" RadiusY="15"/>
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <!-- Switch Symbol: Two Arrows -->
+                    <GeometryDrawing Brush="White">
+                        <GeometryDrawing.Geometry>
+                            <PathGeometry Figures="M 10,8 L 14,11 L 10,14 M 22,18 L 18,21 L 22,24 M 14,11 L 24,11 M 8,21 L 18,21"/>
+                        </GeometryDrawing.Geometry>
+                        <GeometryDrawing.Pen>
+                            <Pen Brush="White" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Round"/>
+                        </GeometryDrawing.Pen>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+
         <!-- Modern Button Style -->
         <Style x:Key="ModernButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="#E8ECF5"/>
