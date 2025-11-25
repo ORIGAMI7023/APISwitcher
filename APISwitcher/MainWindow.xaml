@@ -39,6 +39,7 @@
                             Height="80"
                             Margin="8"
                             Background="{Binding IsActive, Converter={StaticResource ActiveBackgroundConverter}}"
+                            Foreground="{Binding IsActive, Converter={StaticResource ActiveForegroundConverter}}"
                             BorderBrush="{Binding IsActive, Converter={StaticResource ActiveBorderConverter}}"
                             BorderThickness="2"
                             Style="{StaticResource ModernButtonStyle}">
