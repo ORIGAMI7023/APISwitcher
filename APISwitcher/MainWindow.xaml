@@ -83,7 +83,7 @@
             <Button Content="刷新配置"
                     Command="{Binding RefreshCommand}"
                     Width="120"
-                    Height="35"
+                    Height="38"
                     FontSize="14"
                     Margin="5"
                     Style="{StaticResource ModernButtonStyle}"/>
