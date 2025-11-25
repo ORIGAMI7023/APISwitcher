@@ -10,7 +10,7 @@
     "name": "GLM4.6",
     "isActive": false,
     "settings": {
-      "ANTHROPIC_AUTH_TOKEN": "nullapikey",
+      "ANTHROPIC_AUTH_TOKEN": "example-apikey",
       "ANTHROPIC_BASE_URL": "https://open.bigmodel.cn/api/anthropic",
       "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-4.6",
       "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-4.6",
