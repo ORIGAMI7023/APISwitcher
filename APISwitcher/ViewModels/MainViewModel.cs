@@ -84,7 +84,6 @@ public partial class MainViewModel : ObservableObject
             profile.IsActive = true;
 
             StatusMessage = $"已切换到 {profile.Name}";
-            MessageBox.Show($"成功切换到配置: {profile.Name}", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         catch (Exception ex)
         {

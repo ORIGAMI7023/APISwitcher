@@ -21,74 +21,45 @@
                        FontSize="24"
                        FontWeight="Bold"
                        HorizontalAlignment="Center"/>
-            <TextBlock Text="选择一个配置文件来切换 Claude Code CLI 的账号设置"
-                       FontSize="12"
-                       Foreground="Gray"
-                       HorizontalAlignment="Center"
-                       Margin="0,5,0,0"/>
+           
         </StackPanel>
 
-        <!-- 配置列表 -->
-        <Border Grid.Row="1"
-                BorderBrush="#CCCCCC"
-                BorderThickness="1"
-                CornerRadius="5"
-                Background="White">
-            <ListBox ItemsSource="{Binding Profiles}"
-                     SelectedItem="{Binding SelectedProfile}"
-                     BorderThickness="0"
-                     ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                <ListBox.ItemTemplate>
-                    <DataTemplate>
-                        <Border Padding="15,10"
-                                Background="{Binding IsActive, Converter={StaticResource ActiveBackgroundConverter}}"
-                                BorderBrush="{Binding IsActive, Converter={StaticResource ActiveBorderConverter}}"
-                                BorderThickness="2"
-                                CornerRadius="5"
-                                Margin="5"
-                                Cursor="Hand">
-                            <Border.InputBindings>
-                                <MouseBinding MouseAction="LeftClick"
-                                            Command="{Binding DataContext.SwitchProfileCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
-                                            CommandParameter="{Binding}"/>
-                            </Border.InputBindings>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="{Binding Name}"
-                                             FontSize="16"
-                                             FontWeight="Bold"
-                                             Foreground="#333333"/>
-                                    <TextBlock Text="{Binding Settings.ApiUrl, StringFormat='API URL: {0}'}"
-                                             FontSize="12"
-                                             Foreground="#666666"
-                                             Margin="0,5,0,0"/>
-                                    <TextBlock Text="{Binding Settings.Model, StringFormat='Model: {0}'}"
-                                             FontSize="12"
-                                             Foreground="#666666"
-                                             Margin="0,2,0,0"/>
-                                </StackPanel>
-
-                                <Border Grid.Column="1"
-                                        Background="#4CAF50"
-                                        CornerRadius="3"
-                                        Padding="8,4"
-                                        Visibility="{Binding IsActive, Converter={StaticResource BoolToVisibilityConverter}}">
-                                    <TextBlock Text="当前使用"
-                                             Foreground="White"
-                                             FontSize="12"
-                                             FontWeight="Bold"/>
-                                </Border>
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
-        </Border>
+        <!-- 配置按钮 -->
+        <ItemsControl Grid.Row="1" ItemsSource="{Binding Profiles}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Button Command="{Binding DataContext.SwitchProfileCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                            CommandParameter="{Binding}"
+                            Width="200"
+                            Height="80"
+                            Margin="8"
+                            Background="{Binding IsActive, Converter={StaticResource ActiveBackgroundConverter}}"
+                            BorderBrush="{Binding IsActive, Converter={StaticResource ActiveBorderConverter}}"
+                            BorderThickness="2"
+                            Style="{StaticResource ModernButtonStyle}">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Name}"
+                                     FontSize="16"
+                                     FontWeight="Bold"
+                                     Foreground="{Binding IsActive, Converter={StaticResource ActiveForegroundConverter}}"
+                                     HorizontalAlignment="Center"/>
+                            <TextBlock Text="当前使用"
+                                     FontSize="12"
+                                     Foreground="#4CAF50"
+                                     FontWeight="Bold"
+                                     HorizontalAlignment="Center"
+                                     Margin="0,5,0,0"
+                                     Visibility="{Binding IsActive, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                        </StackPanel>
+                    </Button>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
 
         <!-- 操作按钮 -->
         <StackPanel Grid.Row="2"

@@ -21,8 +21,7 @@ public class ConfigService
 
         _jsonOptions = new JsonSerializerOptions
         {
-            WriteIndented = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            WriteIndented = true
         };
     }
 
@@ -84,21 +83,50 @@ public class ConfigService
 
     public bool IsProfileActive(Profile profile, ClaudeSettings? currentSettings)
     {
-        if (currentSettings == null)
+        if (currentSettings == null || currentSettings.ExtensionData == null || profile.Settings.ExtensionData == null)
         {
             return false;
         }
 
-        return profile.Settings.ApiKey == currentSettings.ApiKey &&
-               profile.Settings.ApiUrl == currentSettings.ApiUrl &&
-               profile.Settings.Model == currentSettings.Model;
+        // 比较两个字典的内容是否相同
+        if (currentSettings.ExtensionData.Count != profile.Settings.ExtensionData.Count)
+        {
+            return false;
+        }
+
+        foreach (var kvp in profile.Settings.ExtensionData)
+        {
+            if (!currentSettings.ExtensionData.TryGetValue(kvp.Key, out var currentValue))
+            {
+                return false;
+            }
+
+            // 使用 JsonElement 的 ToString 进行比较
+            if (kvp.Value.ToString() != currentValue.ToString())
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public void UpdateActiveStatus(List<Profile> profiles, ClaudeSettings? currentSettings)
     {
+        bool hasActive = false;
         foreach (var profile in profiles)
         {
             profile.IsActive = IsProfileActive(profile, currentSettings);
+            if (profile.IsActive)
+            {
+                hasActive = true;
+            }
+        }
+
+        // 如果没有任何配置被标记为激活，则不设置任何为激活状态
+        if (!hasActive && currentSettings?.ExtensionData != null && currentSettings.ExtensionData.Count > 0)
+        {
+            // 当前有配置但没有匹配的 profile，所有都保持非激活状态
         }
     }
 }

@@ -8,6 +8,7 @@
         <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
         <converters:ActiveBackgroundConverter x:Key="ActiveBackgroundConverter"/>
         <converters:ActiveBorderConverter x:Key="ActiveBorderConverter"/>
+        <converters:ActiveForegroundConverter x:Key="ActiveForegroundConverter"/>
 
         <!-- Modern Button Style -->
         <Style x:Key="ModernButtonStyle" TargetType="Button">
