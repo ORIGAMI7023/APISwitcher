@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# APISwitcher - User-specific configuration files
+APISwitcher/app_profiles.json
