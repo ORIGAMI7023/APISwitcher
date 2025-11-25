@@ -10,9 +10,9 @@ public class ActiveBorderConverter : IValueConverter
     {
         if (value is bool isActive && isActive)
         {
-            return new SolidColorBrush(Color.FromRgb(76, 175, 80));
+            return new SolidColorBrush(Color.FromRgb(46, 125, 50)); // 深绿色边框
         }
-        return new SolidColorBrush(Color.FromRgb(204, 204, 204));
+        return new SolidColorBrush(Color.FromRgb(159, 167, 179)); // 更明显的浅灰边框
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

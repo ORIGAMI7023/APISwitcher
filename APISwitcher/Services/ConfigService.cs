@@ -83,13 +83,7 @@ public class ConfigService
 
     public bool IsProfileActive(Profile profile, ClaudeSettings? currentSettings)
     {
-        if (currentSettings == null || currentSettings.ExtensionData == null || profile.Settings.ExtensionData == null)
-        {
-            return false;
-        }
-
-        // 比较两个字典的内容是否相同
-        if (currentSettings.ExtensionData.Count != profile.Settings.ExtensionData.Count)
+        if (currentSettings?.ExtensionData == null || profile.Settings.ExtensionData == null || profile.Settings.ExtensionData.Count == 0)
         {
             return false;
         }
@@ -101,8 +95,7 @@ public class ConfigService
                 return false;
             }
 
-            // 使用 JsonElement 的 ToString 进行比较
-            if (kvp.Value.ToString() != currentValue.ToString())
+            if (!IsJsonSubset(kvp.Value, currentValue))
             {
                 return false;
             }
@@ -113,20 +106,67 @@ public class ConfigService
 
     public void UpdateActiveStatus(List<Profile> profiles, ClaudeSettings? currentSettings)
     {
-        bool hasActive = false;
         foreach (var profile in profiles)
         {
             profile.IsActive = IsProfileActive(profile, currentSettings);
-            if (profile.IsActive)
-            {
-                hasActive = true;
-            }
         }
 
-        // 如果没有任何配置被标记为激活，则不设置任何为激活状态
-        if (!hasActive && currentSettings?.ExtensionData != null && currentSettings.ExtensionData.Count > 0)
+        // 如果当前 settings.json 有内容但未匹配到任何 profile，我们保持全部为未激活状态，避免误标。
+    }
+
+    private bool IsJsonSubset(JsonElement subset, JsonElement superset)
+    {
+        if (subset.ValueKind != superset.ValueKind)
         {
-            // 当前有配置但没有匹配的 profile，所有都保持非激活状态
+            return false;
+        }
+
+        switch (subset.ValueKind)
+        {
+            case JsonValueKind.Object:
+                foreach (var subProperty in subset.EnumerateObject())
+                {
+                    if (!superset.TryGetProperty(subProperty.Name, out var superProperty))
+                {
+                    return false;
+                }
+
+                    if (!IsJsonSubset(subProperty.Value, superProperty))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+
+            case JsonValueKind.Array:
+                if (subset.GetArrayLength() != superset.GetArrayLength())
+                {
+                    return false;
+                }
+
+                var subEnumerator = subset.EnumerateArray();
+                var superEnumerator = superset.EnumerateArray();
+
+                while (subEnumerator.MoveNext() && superEnumerator.MoveNext())
+                {
+                    if (!IsJsonSubset(subEnumerator.Current, superEnumerator.Current))
+                    {
+                        return false;
+                    }
+                }
+                return true;
+
+            case JsonValueKind.String:
+                return subset.GetString() == superset.GetString();
+
+            case JsonValueKind.Number:
+            case JsonValueKind.True:
+            case JsonValueKind.False:
+            case JsonValueKind.Null:
+            case JsonValueKind.Undefined:
+            default:
+                // 对于原子值，使用原始文本避免精度丢失
+                return subset.GetRawText() == superset.GetRawText();
         }
     }
 }

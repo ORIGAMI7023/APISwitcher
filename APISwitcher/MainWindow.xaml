@@ -44,10 +44,20 @@
                             Style="{StaticResource ModernButtonStyle}">
                         <StackPanel>
                             <TextBlock Text="{Binding Name}"
-                                     FontSize="16"
-                                     FontWeight="Bold"
-                                     Foreground="{Binding IsActive, Converter={StaticResource ActiveForegroundConverter}}"
-                                     HorizontalAlignment="Center"/>
+                                       FontSize="16"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="#1F2933"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                <Setter Property="Foreground" Value="#1B1F23"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
                             <TextBlock Text="当前使用"
                                      FontSize="12"
                                      Foreground="#4CAF50"

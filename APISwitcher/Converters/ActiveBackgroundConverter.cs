@@ -10,9 +10,9 @@ public class ActiveBackgroundConverter : IValueConverter
     {
         if (value is bool isActive && isActive)
         {
-            return new SolidColorBrush(Color.FromRgb(232, 245, 233));
+            return new SolidColorBrush(Color.FromRgb(223, 246, 227)); // 柔和的绿色高亮
         }
-        return new SolidColorBrush(Colors.White);
+        return new SolidColorBrush(Color.FromRgb(242, 244, 248)); // 浅灰底方便区分
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
