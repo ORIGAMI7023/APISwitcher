@@ -33,30 +33,54 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Button Command="{Binding DataContext.SwitchProfileCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                            CommandParameter="{Binding}"
-                            Width="200"
+                    <Border Width="200"
                             Height="80"
                             Margin="8"
-                            Background="{Binding IsActive, Converter={StaticResource ActiveBackgroundConverter}}"
-                            BorderBrush="{Binding IsActive, Converter={StaticResource ActiveBorderConverter}}"
+                            Background="#F2F4F8"
                             BorderThickness="2"
-                            Style="{StaticResource ModernButtonStyle}">
-                        <StackPanel>
+                            BorderBrush="#9FA7B3"
+                            CornerRadius="8"
+                            Cursor="Hand">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                        <Setter Property="Background" Value="#DFF6E3"/>
+                                        <Setter Property="BorderBrush" Value="#2E7D32"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <Border.InputBindings>
+                            <MouseBinding Command="{Binding DataContext.SwitchProfileCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                        CommandParameter="{Binding}"
+                                        MouseAction="LeftClick"/>
+                        </Border.InputBindings>
+                        <StackPanel VerticalAlignment="Center">
                             <TextBlock Text="{Binding Name}"
                                        FontSize="16"
                                        FontWeight="Bold"
                                        HorizontalAlignment="Center"
-                                       Foreground="{Binding IsActive, Converter={StaticResource ActiveForegroundConverter}}"/>
-                            <TextBlock Text="当前使用"
-                                     FontSize="12"
+                                       Foreground="#2C3E50">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                <Setter Property="Foreground" Value="#1B5E20"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <TextBlock Text="● 当前使用"
+                                     FontSize="11"
                                      Foreground="#4CAF50"
-                                     FontWeight="Bold"
+                                     FontWeight="SemiBold"
                                      HorizontalAlignment="Center"
-                                     Margin="0,5,0,0"
+                                     Margin="0,4,0,0"
                                      Visibility="{Binding IsActive, Converter={StaticResource BoolToVisibilityConverter}}"/>
                         </StackPanel>
-                    </Button>
+                    </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
