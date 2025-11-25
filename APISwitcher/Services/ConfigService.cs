@@ -21,7 +21,8 @@ public class ConfigService
 
         _jsonOptions = new JsonSerializerOptions
         {
-            WriteIndented = true
+            WriteIndented = true,
+            PropertyNameCaseInsensitive = true
         };
     }
 
