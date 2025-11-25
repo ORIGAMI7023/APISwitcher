@@ -16,7 +16,7 @@
 
 ## 📖 简介
 
-APISwitcher 是一个轻量级的桌面工具，专为 [Claude Code](https://claude.ai/code) 用户设计。它允许你在多个 API 配置之间快速切换，无需手动编辑配置文件。无论你是在官方 API 和第三方 API 之间切换，还是管理多个账号，APISwitcher 都能让这个过程变得简单高效。
+APISwitcher 是一个轻量级的桌面工具，专为 [Claude Code CLI](https://www.code-cli.com/) 用户设计。它允许你在多个 API 配置之间快速切换，无需手动编辑配置文件。无论你是在官方 API 和第三方 API 之间切换，还是管理多个账号，APISwitcher 都能让这个过程变得简单高效。
 
 ## ✨ 功能特性
 
@@ -60,7 +60,7 @@ dotnet run --project APISwitcher/APISwitcher.csproj
 
 ### 首次配置
 
-1. **创建配置文件**
+1. **创建配置文件（以GLM模型API为例）**
 
    在应用程序根目录下创建或编辑 `app_profiles.json` 文件：
 
@@ -74,15 +74,15 @@ dotnet run --project APISwitcher/APISwitcher.csproj
        }
      },
      {
-       "name": "自定义API",
+       "name": "GLM API",
        "isActive": false,
        "settings": {
          "env": {
            "ANTHROPIC_AUTH_TOKEN": "your-api-key",
-           "ANTHROPIC_BASE_URL": "https://your-api-endpoint.com",
-           "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-sonnet-4-5-20250929",
-           "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4-5-20250929",
-           "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-sonnet-4-5-20250929",
+           "ANTHROPIC_BASE_URL": "https://open.bigmodel.cn/api/anthropic",
+           "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-4.6",
+           "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-4.6",
+           "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-air",
            "API_TIMEOUT_MS": "3000000",
            "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
          },
@@ -99,14 +99,6 @@ dotnet run --project APISwitcher/APISwitcher.csproj
 3. **切换配置**
 
    点击任意配置卡片即可切换到该配置。当前激活的配置会以绿色边框和背景显示。
-
-### 界面说明
-
-![应用界面示例](docs/screenshot.png)
-
-- **配置卡片**：显示所有可用配置，当前激活的配置会高亮显示
-- **刷新按钮**：重新加载配置文件（在外部修改配置后使用）
-- **状态栏**：显示当前操作状态和加载进度
 
 ### 配置项说明
 
@@ -239,15 +231,6 @@ A: APISwitcher 支持 Claude Code 的所有配置项。你可以在 `settings` �
 - 📝 建议将 `app_profiles.json` 添加到 `.gitignore`
 - 🔐 妥善保管你的 API 密钥和认证令牌
 - 💾 定期备份你的配置文件
-
-## 📄 许可证
-
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
-
-## 🙏 致谢
-
-- [Claude Code](https://claude.ai/code) - Anthropic 的官方 CLI 工具
-- [CommunityToolkit.Mvvm](https://github.com/CommunityToolkit/dotnet) - 优秀的 MVVM 框架
 
 ## 📮 联系方式
 
