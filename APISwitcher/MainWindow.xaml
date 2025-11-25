@@ -61,20 +61,10 @@
                                        FontSize="16"
                                        FontWeight="Bold"
                                        HorizontalAlignment="Center"
-                                       Foreground="#2C3E50">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                                <Setter Property="Foreground" Value="#1B5E20"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
+                                       Foreground="Black"/>
                             <TextBlock Text="● 当前使用"
                                      FontSize="11"
-                                     Foreground="#4CAF50"
+                                     Foreground="Green"
                                      FontWeight="SemiBold"
                                      HorizontalAlignment="Center"
                                      Margin="0,4,0,0"
