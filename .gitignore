@@ -364,3 +364,5 @@ FodyWeavers.xsd
 
 # APISwitcher - User-specific configuration files
 APISwitcher/app_profiles.json
+
+.claude/
