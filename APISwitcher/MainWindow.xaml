@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:APISwitcher"
         mc:Ignorable="d"
-        Title="Claude Code 账号切换工具" Height="500" Width="700"
+        Title="Claude Code 账号切换工具" Height="500" Width="750"
         WindowStartupLocation="CenterScreen"
         Icon="{StaticResource AppIcon}">
     <Grid Margin="20">
