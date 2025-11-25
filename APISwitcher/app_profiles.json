@@ -1,0 +1,41 @@
+[
+  {
+    "name": "个人账号",
+    "isActive": false,
+    "settings": {
+      "apiKey": "sk-ant-api03-your-personal-api-key-here",
+      "apiUrl": "https://api.anthropic.com",
+      "model": "claude-sonnet-4-5-20250929",
+      "maxTokens": 8192,
+      "temperature": 0.7,
+      "organizationId": null,
+      "projectId": null
+    }
+  },
+  {
+    "name": "工作账号",
+    "isActive": false,
+    "settings": {
+      "apiKey": "sk-ant-api03-your-work-api-key-here",
+      "apiUrl": "https://api.anthropic.com",
+      "model": "claude-sonnet-4-5-20250929",
+      "maxTokens": 8192,
+      "temperature": 0.5,
+      "organizationId": "org-work-id",
+      "projectId": "proj-work-id"
+    }
+  },
+  {
+    "name": "测试账号",
+    "isActive": false,
+    "settings": {
+      "apiKey": "sk-ant-api03-your-test-api-key-here",
+      "apiUrl": "https://api.anthropic.com",
+      "model": "claude-haiku-4-20250514",
+      "maxTokens": 4096,
+      "temperature": 0.3,
+      "organizationId": null,
+      "projectId": null
+    }
+  }
+]
