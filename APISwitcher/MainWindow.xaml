@@ -39,7 +39,6 @@
                             Height="80"
                             Margin="8"
                             Background="{Binding IsActive, Converter={StaticResource ActiveBackgroundConverter}}"
-                            Foreground="{Binding IsActive, Converter={StaticResource ActiveForegroundConverter}}"
                             BorderBrush="{Binding IsActive, Converter={StaticResource ActiveBorderConverter}}"
                             BorderThickness="2"
                             Style="{StaticResource ModernButtonStyle}">
@@ -47,7 +46,8 @@
                             <TextBlock Text="{Binding Name}"
                                        FontSize="16"
                                        FontWeight="Bold"
-                                       HorizontalAlignment="Center"/>
+                                       HorizontalAlignment="Center"
+                                       Foreground="{Binding IsActive, Converter={StaticResource ActiveForegroundConverter}}"/>
                             <TextBlock Text="当前使用"
                                      FontSize="12"
                                      Foreground="#4CAF50"
