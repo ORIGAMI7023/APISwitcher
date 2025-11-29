@@ -35,7 +35,6 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Border Width="200"
-                            Height="80"
                             Margin="8"
                             Background="#F2F4F8"
                             BorderThickness="2"
@@ -44,6 +43,8 @@
                             Cursor="Hand">
                         <Border.Style>
                             <Style TargetType="Border">
+                                <Setter Property="MinHeight" Value="80"/>
+                                <Setter Property="Padding" Value="10"/>
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsActive}" Value="True">
                                         <Setter Property="Background" Value="#DFF6E3"/>
@@ -58,11 +59,14 @@
                                         MouseAction="LeftClick"/>
                         </Border.InputBindings>
                         <StackPanel VerticalAlignment="Center">
+                            <!-- Profile名称 -->
                             <TextBlock Text="{Binding Name}"
                                        FontSize="16"
                                        FontWeight="Bold"
                                        HorizontalAlignment="Center"
                                        Foreground="Black"/>
+
+                            <!-- 当前使用标识 -->
                             <TextBlock Text="● 当前使用"
                                      FontSize="11"
                                      Foreground="Green"
@@ -70,6 +74,35 @@
                                      HorizontalAlignment="Center"
                                      Margin="0,4,0,0"
                                      Visibility="{Binding IsActive, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                            <!-- 余额信息 -->
+                            <Border Margin="0,6,0,0"
+                                    Visibility="{Binding ShouldShowBalance, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <TextBlock HorizontalAlignment="Center"
+                                           FontSize="12">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Text" Value="{Binding BalanceInfo.DisplayText}"/>
+                                            <Setter Property="Foreground" Value="#1976D2"/>
+                                            <Style.Triggers>
+                                                <!-- 加载中 -->
+                                                <DataTrigger Binding="{Binding BalanceInfo.IsLoading}" Value="True">
+                                                    <Setter Property="Foreground" Value="#757575"/>
+                                                </DataTrigger>
+                                                <!-- 错误状态 -->
+                                                <DataTrigger Binding="{Binding BalanceInfo.HasError}" Value="True">
+                                                    <Setter Property="Foreground" Value="#D32F2F"/>
+                                                </DataTrigger>
+                                                <!-- 无限额度 -->
+                                                <DataTrigger Binding="{Binding BalanceInfo.IsUnlimited}" Value="True">
+                                                    <Setter Property="Foreground" Value="#388E3C"/>
+                                                    <Setter Property="FontWeight" Value="Bold"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Border>
                         </StackPanel>
                     </Border>
                 </DataTemplate>

@@ -18,7 +18,11 @@ public partial class App : Application
 
     private void ConfigureServices(IServiceCollection services)
     {
+        // 注册服务
         services.AddSingleton<ConfigService>();
+        services.AddSingleton<BalanceService>();
+
+        // 注册ViewModel和View
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<MainWindow>();
     }
@@ -33,6 +37,8 @@ public partial class App : Application
 
     protected override void OnExit(ExitEventArgs e)
     {
+        // 清理资源
+        _serviceProvider.GetService<BalanceService>()?.Dispose();
         _serviceProvider?.Dispose();
         base.OnExit(e);
     }

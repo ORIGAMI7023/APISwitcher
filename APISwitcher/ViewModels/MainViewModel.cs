@@ -10,6 +10,7 @@ namespace APISwitcher.ViewModels;
 public partial class MainViewModel : ObservableObject
 {
     private readonly ConfigService _configService;
+    private readonly BalanceService _balanceService;
 
     [ObservableProperty]
     private ObservableCollection<Profile> profiles = new();
@@ -20,14 +21,25 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool isLoading;
 
-    public MainViewModel(ConfigService configService)
+    public MainViewModel(ConfigService configService, BalanceService balanceService)
     {
         _configService = configService;
+        _balanceService = balanceService;
     }
 
     public async Task InitializeAsync()
     {
         await LoadProfilesAsync();
+        // 启动时查询所有配置的余额
+        await QueryAllBalancesAsync();
+    }
+
+    /// <summary>
+    /// 当窗口激活时调用
+    /// </summary>
+    public async Task OnWindowActivatedAsync()
+    {
+        await QueryAllBalancesAsync();
     }
 
     [RelayCommand]
@@ -84,6 +96,9 @@ public partial class MainViewModel : ObservableObject
             profile.IsActive = true;
 
             StatusMessage = $"已切换到 {profile.Name}";
+
+            // 切换后查询该配置的余额
+            await QuerySingleBalanceAsync(profile);
         }
         catch (Exception ex)
         {
@@ -100,5 +115,75 @@ public partial class MainViewModel : ObservableObject
     private async Task RefreshAsync()
     {
         await LoadProfilesAsync();
+        await QueryAllBalancesAsync();
+    }
+
+    /// <summary>
+    /// 查询所有配置的余额
+    /// </summary>
+    private async Task QueryAllBalancesAsync()
+    {
+        // 首先清除所有不应该显示余额的配置的 BalanceInfo
+        foreach (var profile in Profiles.Where(p => !p.ShouldShowBalance))
+        {
+            profile.BalanceInfo = null;
+        }
+
+        // 然后查询应该显示余额的配置
+        var tasks = Profiles
+            .Where(p => p.ShouldShowBalance)
+            .Select(p => QuerySingleBalanceAsync(p));
+
+        await Task.WhenAll(tasks);
+    }
+
+    /// <summary>
+    /// 查询单个配置的余额
+    /// </summary>
+    private async Task QuerySingleBalanceAsync(Profile profile)
+    {
+        if (!profile.ShouldShowBalance)
+        {
+            return;
+        }
+
+        try
+        {
+            // 不要每次都创建新的 BalanceInfo
+            // 如果已经存在，设置为加载状态；否则创建新的
+            if (profile.BalanceInfo == null)
+            {
+                profile.BalanceInfo = new BalanceInfo { IsLoading = true, IsFirstLoad = true };
+            }
+            else
+            {
+                profile.BalanceInfo.IsLoading = true;
+            }
+
+            // 执行查询（BalanceService 会保留和更新状态）
+            var balanceInfo = await _balanceService.QueryBalanceAsync(profile);
+            profile.BalanceInfo = balanceInfo;
+        }
+        catch (Exception ex)
+        {
+            // 如果已有 BalanceInfo，更新错误状态；否则创建新的
+            if (profile.BalanceInfo != null)
+            {
+                profile.BalanceInfo.IsLoading = false;
+                profile.BalanceInfo.HasError = true;
+                profile.BalanceInfo.ErrorMessage = ex.Message;
+                profile.BalanceInfo.FailureCount++;
+            }
+            else
+            {
+                profile.BalanceInfo = new BalanceInfo
+                {
+                    IsLoading = false,
+                    HasError = true,
+                    ErrorMessage = ex.Message,
+                    FailureCount = 1
+                };
+            }
+        }
     }
 }
