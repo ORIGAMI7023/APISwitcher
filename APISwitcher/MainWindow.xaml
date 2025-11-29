@@ -7,7 +7,8 @@
         mc:Ignorable="d"
         Title="Claude Code 账号切换工具" Height="500" Width="750"
         WindowStartupLocation="CenterScreen"
-        Icon="{StaticResource AppIcon}">
+        Icon="{StaticResource AppIcon}"
+        KeyboardNavigation.TabNavigation="None">
     <Grid Margin="20">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -40,7 +41,9 @@
                             BorderThickness="2"
                             BorderBrush="#9FA7B3"
                             CornerRadius="8"
-                            Cursor="Hand">
+                            Cursor="Hand"
+                            FocusVisualStyle="{x:Null}"
+                            Focusable="False">
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Setter Property="MinHeight" Value="80"/>
