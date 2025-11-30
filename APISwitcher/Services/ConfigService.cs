@@ -107,12 +107,83 @@ public class ConfigService
 
     public void UpdateActiveStatus(List<Profile> profiles, ClaudeSettings? currentSettings)
     {
+        // 首先重置所有配置的激活状态
         foreach (var profile in profiles)
         {
-            profile.IsActive = IsProfileActive(profile, currentSettings);
+            profile.IsActive = false;
         }
 
-        // 如果当前 settings.json 有内容但未匹配到任何 profile，我们保持全部为未激活状态，避免误标。
+        if (currentSettings?.ExtensionData == null)
+        {
+            return;
+        }
+
+        // 找出所有匹配的配置及其匹配程度（设置项数量）
+        var matchedProfiles = profiles
+            .Where(p => IsProfileActive(p, currentSettings))
+            .Select(p => new
+            {
+                Profile = p,
+                MatchScore = CountSettingsKeys(p.Settings.ExtensionData)
+            })
+            .ToList();
+
+        // 只选择匹配程度最高的配置作为激活配置
+        // 如果有多个配置得分相同，则都不激活（避免歧义）
+        if (matchedProfiles.Count > 0)
+        {
+            var maxScore = matchedProfiles.Max(m => m.MatchScore);
+            var bestMatches = matchedProfiles.Where(m => m.MatchScore == maxScore).ToList();
+
+            // 只有当最高得分配置唯一时才标记为激活
+            if (bestMatches.Count == 1)
+            {
+                bestMatches[0].Profile.IsActive = true;
+            }
+        }
+    }
+
+    /// <summary>
+    /// 递归计算设置中的键数量，用于确定匹配程度
+    /// </summary>
+    private int CountSettingsKeys(Dictionary<string, JsonElement>? extensionData)
+    {
+        if (extensionData == null)
+        {
+            return 0;
+        }
+
+        int count = 0;
+        foreach (var kvp in extensionData)
+        {
+            count += CountJsonElementKeys(kvp.Value);
+        }
+        return count;
+    }
+
+    private int CountJsonElementKeys(JsonElement element)
+    {
+        switch (element.ValueKind)
+        {
+            case JsonValueKind.Object:
+                int count = 0;
+                foreach (var prop in element.EnumerateObject())
+                {
+                    count += 1 + CountJsonElementKeys(prop.Value);
+                }
+                return count;
+
+            case JsonValueKind.Array:
+                int arrayCount = 0;
+                foreach (var item in element.EnumerateArray())
+                {
+                    arrayCount += CountJsonElementKeys(item);
+                }
+                return arrayCount;
+
+            default:
+                return 1;
+        }
     }
 
     private bool IsJsonSubset(JsonElement subset, JsonElement superset)
