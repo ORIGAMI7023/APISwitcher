@@ -18,5 +18,18 @@
       "API_TIMEOUT_MS": "3000000",
       "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
     }
+  },
+  {
+    "name": "Claude中转",
+    "isActive": false,
+    "settings": {
+      "env": {
+        "ANTHROPIC_AUTH_TOKEN": "sk-Hgsf7......",
+        "ANTHROPIC_BASE_URL": "https://...",
+        "API_TIMEOUT_MS": "3000000",
+        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+      },
+      "alwaysThinkingEnabled": false
+    }
   }
 ]
