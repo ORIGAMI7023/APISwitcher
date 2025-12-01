@@ -46,10 +46,22 @@ public class BalanceService : IDisposable
             var token = GetTokenFromSettings(profile.Settings);
             var baseUrl = GetBaseUrlFromSettings(profile.Settings);
 
-            if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(baseUrl))
+            // 检查认证信息（cookie 认证不需要 token）
+            if (profile.BalanceApi.AuthType.ToLower() != "cookie")
+            {
+                if (string.IsNullOrEmpty(token))
+                {
+                    balanceInfo.HasError = true;
+                    balanceInfo.ErrorMessage = "缺少认证 Token";
+                    balanceInfo.IsLoading = false;
+                    return balanceInfo;
+                }
+            }
+
+            if (string.IsNullOrEmpty(baseUrl))
             {
                 balanceInfo.HasError = true;
-                balanceInfo.ErrorMessage = "缺少认证信息";
+                balanceInfo.ErrorMessage = "缺少 BaseUrl";
                 balanceInfo.IsLoading = false;
                 return balanceInfo;
             }
@@ -76,9 +88,8 @@ public class BalanceService : IDisposable
                 throw new Exception("响应内容为空");
             }
 
-            // 计算余额（返回 long）
-            var rawBalance = CalculateBalance(jsonNode, profile.BalanceApi);
-            decimal balance = rawBalance;
+            // 计算余额（返回 decimal）
+            decimal balance = CalculateBalance(jsonNode, profile.BalanceApi);
 
             // 应用除数进行单位转换（使用 decimal 保证精度）
             if (profile.BalanceApi.Divisor > 0 && profile.BalanceApi.Divisor != 1.0)
@@ -139,7 +150,7 @@ public class BalanceService : IDisposable
     /// <summary>
     /// 计算余额
     /// </summary>
-    private long CalculateBalance(JsonNode jsonNode, BalanceApiConfig apiConfig)
+    private decimal CalculateBalance(JsonNode jsonNode, BalanceApiConfig apiConfig)
     {
         // 优先使用 balanceField
         if (!string.IsNullOrEmpty(apiConfig.BalanceField))
@@ -207,7 +218,7 @@ public class BalanceService : IDisposable
     /// <summary>
     /// 创建HTTP请求
     /// </summary>
-    private HttpRequestMessage CreateHttpRequest(BalanceApiConfig apiConfig, string token, string url)
+    private HttpRequestMessage CreateHttpRequest(BalanceApiConfig apiConfig, string? token, string url)
     {
         var method = apiConfig.Method.ToUpper() == "POST" ? HttpMethod.Post : HttpMethod.Get;
         var request = new HttpRequestMessage(method, url);
@@ -222,6 +233,23 @@ public class BalanceService : IDisposable
             // 使用Body认证：{"token": "{token}"}
             var bodyContent = new { token };
             request.Content = JsonContent.Create(bodyContent);
+        }
+        else if (apiConfig.AuthType.ToLower() == "cookie")
+        {
+            // 使用Cookie认证
+            if (!string.IsNullOrEmpty(apiConfig.SessionCookie))
+            {
+                request.Headers.Add("Cookie", apiConfig.SessionCookie);
+            }
+
+            // 添加额外的headers
+            if (apiConfig.ExtraHeaders != null)
+            {
+                foreach (var header in apiConfig.ExtraHeaders)
+                {
+                    request.Headers.Add(header.Key, header.Value);
+                }
+            }
         }
 
         return request;

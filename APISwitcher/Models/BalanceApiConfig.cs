@@ -21,12 +21,27 @@ public class BalanceApiConfig
     public string Method { get; set; } = "GET";
 
     /// <summary>
-    /// 认证方式：header 或 body
+    /// 认证方式：header、body 或 cookie
     /// - header: 使用 Authorization: Bearer {token}
     /// - body: 在请求体中发送 {"token": "{token}"}
+    /// - cookie: 使用 Cookie header 认证（需要配置 sessionCookie）
     /// </summary>
     [JsonPropertyName("authType")]
     public string AuthType { get; set; } = "header";
+
+    /// <summary>
+    /// Session Cookie（当 authType 为 cookie 时使用）
+    /// 例如："session=MTc2NDQ4OTIzN3x..."
+    /// </summary>
+    [JsonPropertyName("sessionCookie")]
+    public string? SessionCookie { get; set; }
+
+    /// <summary>
+    /// 额外的 HTTP Headers（当 authType 为 cookie 时可能需要）
+    /// 例如：{"new-api-user": "285", "origin": "https://example.com"}
+    /// </summary>
+    [JsonPropertyName("extraHeaders")]
+    public Dictionary<string, string>? ExtraHeaders { get; set; }
 
     /// <summary>
     /// 响应中余额字段的路径（使用点号分隔）

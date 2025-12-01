@@ -3,7 +3,7 @@
     "name": "Claude官方",
     "isActive": false,
     "settings": {
-      "alwaysThinkingEnabled": true
+      "alwaysThinkingEnabled": false
     }
   },
   {
