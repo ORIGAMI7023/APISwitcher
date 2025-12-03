@@ -23,6 +23,7 @@ APISwitcher 是一个轻量级的桌面工具，专为 [Claude Code CLI](https:/
 - 📋 **多配置管理** - 在一个界面中管理所有 Claude Code 配置
 - 🔄 **一键切换** - 点击即可切换到不同的 API 配置
 - 🎯 **智能识别** - 自动识别并高亮显示当前激活的配置
+- 💰 **余额查询** - 支持查询和显示 API 账户余额信息（可选）
 - 💾 **自动同步** - 配置更改立即写入 Claude Code 设置文件
 - 🎨 **现代界面** - 简洁直观的 WPF 界面设计
 - ⚡ **轻量快速** - 启动迅速，资源占用低
@@ -102,6 +103,8 @@ dotnet run --project APISwitcher/APISwitcher.csproj
 
 ### 配置项说明
 
+#### 基础配置
+
 - `name`: 配置文件的显示名称
 - `isActive`: 是否为当前激活的配置（由程序自动管理）
 - `settings`: Claude Code 的配置内容
@@ -114,6 +117,89 @@ dotnet run --project APISwitcher/APISwitcher.csproj
     - `API_TIMEOUT_MS`: API 超时时间（毫秒）
     - `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC`: 禁用非必要流量
   - `alwaysThinkingEnabled`: 是否启用持续思考模式
+
+#### 余额查询配置（可选）
+
+`balanceApi` 对象用于配置余额查询功能。**注意：这些配置需要通过浏览器开发者工具抓包获取。**
+
+**如何获取 balanceApi 配置：**
+1. 打开 API 提供商的网页控制台
+2. 按 F12 打开浏览器开发者工具
+3. 切换到 Network（网络）标签
+4. 在网页上查看余额信息
+5. 在 Network 标签中找到对应的 API 请求
+6. 查看请求的 URL、Method、Headers 和 Response 数据结构
+7. 根据抓包信息填写以下配置
+
+**配置项说明：**
+
+- `endpoint`: API 端点路径（例如：`/api/user/self`）
+- `method`: HTTP 请求方法（`GET` 或 `POST`）
+- `authType`: 认证方式
+  - `body`: 使用 API Token 在请求体中认证
+  - `cookie`: 使用 Cookie 认证
+- `timeout`: 请求超时时间（毫秒），默认 5000
+- `displayUnit`: 余额显示单位
+  - `usd`: 美元
+  - `times`: 次数
+  - `cny`: 人民币
+
+**字段映射配置（根据 API 响应结构选择）：**
+
+- `balanceField`: 余额字段路径（用于直接返回余额的 API）
+  - 例如：`data.quota` 表示从响应的 `data.quota` 字段读取余额
+- `limitField`: 总额度字段路径（用于返回已用/总额的 API）
+- `usedField`: 已使用字段路径（用于返回已用/总额的 API）
+- `divisor`: 除数，用于单位转换（例如：API 返回的是分，设置为 100 转换为元）
+
+**Body 认证示例：**
+
+```json
+{
+  "name": "示例配置",
+  "settings": { ... },
+  "balanceApi": {
+    "endpoint": "/api/token/query",
+    "method": "POST",
+    "authType": "body",
+    "limitField": "data.total_usage_limit",
+    "usedField": "data.total_usage_count",
+    "displayUnit": "times",
+    "timeout": 5000
+  }
+}
+```
+
+**Cookie 认证示例：**
+
+```json
+{
+  "name": "示例配置",
+  "settings": { ... },
+  "balanceApi": {
+    "endpoint": "/api/user/self",
+    "method": "GET",
+    "authType": "cookie",
+    "balanceField": "data.quota",
+    "displayUnit": "usd",
+    "divisor": 500000,
+    "timeout": 5000,
+    "sessionCookie": "session=your-session-cookie-value",
+    "extraHeaders": {
+      "accept": "application/json, text/plain, */*",
+      "origin": "https://example.com",
+      "referer": "https://example.com/console",
+      "user-agent": "Mozilla/5.0"
+    }
+  }
+}
+```
+
+**特殊说明：**
+- Cookie 认证需要提供 `sessionCookie` 和 `extraHeaders`
+- `sessionCookie` 可以从浏览器开发者工具的 Application → Cookies 中获取
+- `extraHeaders` 需要从抓包的请求头中复制，确保包含必要的认证信息
+- 字段路径使用点号分隔，例如 `data.user.balance` 表示访问 `response.data.user.balance`
 
 ## 🔧 工作原理
 
@@ -223,6 +309,26 @@ A: 检查以下几点：
 <summary><b>Q: 支持哪些配置项？</b></summary>
 
 A: APISwitcher 支持 Claude Code 的所有配置项。你可以在 `settings` 对象中添加任何 Claude Code 支持的配置。
+</details>
+
+<details>
+<summary><b>Q: 如何配置余额查询功能？</b></summary>
+
+A: 余额查询功能是可选的，需要通过浏览器抓包获取 API 配置信息：
+1. 打开 API 提供商的网页控制台
+2. 按 F12 打开开发者工具，切换到 Network 标签
+3. 在网页上查看余额，找到对应的 API 请求
+4. 根据请求信息配置 `balanceApi` 对象（详见配置项说明）
+</details>
+
+<details>
+<summary><b>Q: 余额查询显示错误或无限额度？</b></summary>
+
+A: 可能的原因：
+- Cookie 认证的 `sessionCookie` 已过期，需要重新抓包获取
+- API 端点或字段路径配置错误，检查抓包信息
+- API 返回 -1 或特殊值表示无限额度（这是正常的）
+- 网络连接问题或 API 服务不可用
 </details>
 
 ## 🔒 安全提示
