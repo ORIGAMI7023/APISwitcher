@@ -30,6 +30,37 @@
         "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
       },
       "alwaysThinkingEnabled": false
+    },
+    "balanceApi": {
+      "endpoint": "/api/user/self",
+      "method": "GET",
+      "authType": "cookie",
+      "balanceField": "data.quota",
+      "displayUnit": "usd",
+      "divisor": 500000,
+      "timeout": 5000,
+      "sessionCookie": "session=your_session_cookie_here",
+      "extraHeaders": {
+        "accept": "application/json, text/plain, */*",
+        "origin": "https://mikucode.xyz",
+        "referer": "https://mikucode.xyz/console/topup",
+        "user-agent": "Mozilla/5.0",
+        "new-api-user": "your_user_id"
+      }
+    },
+    "subscriptionApi": {
+      "endpoint": "/api/subscription/user/?p=0&size=10",
+      "method": "GET",
+      "authType": "cookie",
+      "timeout": 5000,
+      "sessionCookie": "session=your_session_cookie_here",
+      "extraHeaders": {
+        "accept": "application/json, text/plain, */*",
+        "origin": "https://mikucode.xyz",
+        "referer": "https://mikucode.xyz/console/topup",
+        "user-agent": "Mozilla/5.0",
+        "new-api-user": "your_user_id"
+      }
     }
   }
 ]

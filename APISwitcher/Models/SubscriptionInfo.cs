@@ -45,6 +45,12 @@ public partial class SubscriptionInfo : ObservableObject
     private string? errorMessage;
 
     /// <summary>
+    /// 是否首次加载（用于控制UI显示，首次加载时隐藏内容显示加载提示，刷新时保留旧内容）
+    /// </summary>
+    [ObservableProperty]
+    private bool isFirstLoad = true;
+
+    /// <summary>
     /// 单位换算除数（API原始值除以此数得到美元）
     /// </summary>
     private const double Divisor = 500000.0;

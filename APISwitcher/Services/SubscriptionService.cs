@@ -102,6 +102,7 @@ public class SubscriptionService : IDisposable
             subscriptionInfo.ExpireTime = item["expire_time"]?.GetValue<long>() ?? 0;
 
             subscriptionInfo.HasError = false;
+            subscriptionInfo.IsFirstLoad = false;
         }
         catch (OperationCanceledException)
         {

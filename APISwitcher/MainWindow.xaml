@@ -123,24 +123,27 @@
                 CornerRadius="8"
                 Visibility="{Binding ShowSubscriptionPanel, Converter={StaticResource BoolToVisibilityConverter}}">
             <StackPanel>
-                <!-- 标题 -->
-                <TextBlock Text="月卡订阅信息"
-                           FontSize="16"
-                           FontWeight="Bold"
-                           Margin="0,0,0,10"/>
+                <!-- 标题行（使用Grid避免布局跳动） -->
+                <Grid Margin="0,0,0,10" Height="22">
+                    <TextBlock Text="月卡订阅信息"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="更新失败"
+                               FontSize="12"
+                               Foreground="#D32F2F"
+                               Margin="120,0,0,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               Visibility="{Binding ActiveSubscriptionInfo.HasError, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                </Grid>
 
                 <!-- 加载状态 -->
                 <TextBlock Text="加载中..."
                            FontSize="12"
                            Foreground="#757575"
-                           Visibility="{Binding ActiveSubscriptionInfo.IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
-
-                <!-- 错误状态 -->
-                <TextBlock Text="{Binding ActiveSubscriptionInfo.ErrorMessage}"
-                           FontSize="12"
-                           Foreground="#D32F2F"
-                           TextWrapping="Wrap"
-                           Visibility="{Binding ActiveSubscriptionInfo.HasError, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                           Visibility="{Binding ActiveSubscriptionInfo.IsFirstLoad, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
                 <!-- 订阅数据显示 -->
                 <StackPanel>
@@ -148,7 +151,8 @@
                         <Style TargetType="StackPanel">
                             <Setter Property="Visibility" Value="Visible"/>
                             <Style.Triggers>
-                                <DataTrigger Binding="{Binding ActiveSubscriptionInfo.IsLoading}" Value="True">
+                                <!-- 只在首次加载时隐藏，刷新时保留显示 -->
+                                <DataTrigger Binding="{Binding ActiveSubscriptionInfo.IsFirstLoad}" Value="True">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding ActiveSubscriptionInfo.HasError}" Value="True">

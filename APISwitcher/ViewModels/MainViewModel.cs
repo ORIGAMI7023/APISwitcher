@@ -223,11 +223,12 @@ public partial class MainViewModel : ObservableObject
         {
             if (ActiveSubscriptionInfo == null)
             {
-                ActiveSubscriptionInfo = new SubscriptionInfo { IsLoading = true };
+                ActiveSubscriptionInfo = new SubscriptionInfo { IsLoading = true, IsFirstLoad = true };
             }
             else
             {
                 ActiveSubscriptionInfo.IsLoading = true;
+                // 刷新时不是首次加载，保持 IsFirstLoad = false
             }
 
             var subscriptionInfo = await _subscriptionService.QuerySubscriptionAsync(activeProfile!);
