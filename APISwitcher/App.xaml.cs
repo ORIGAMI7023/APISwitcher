@@ -21,6 +21,7 @@ public partial class App : Application
         // 注册服务
         services.AddSingleton<ConfigService>();
         services.AddSingleton<BalanceService>();
+        services.AddSingleton<SubscriptionService>();
 
         // 注册ViewModel和View
         services.AddSingleton<MainViewModel>();
@@ -39,6 +40,7 @@ public partial class App : Application
     {
         // 清理资源
         _serviceProvider.GetService<BalanceService>()?.Dispose();
+        _serviceProvider.GetService<SubscriptionService>()?.Dispose();
         _serviceProvider?.Dispose();
         base.OnExit(e);
     }

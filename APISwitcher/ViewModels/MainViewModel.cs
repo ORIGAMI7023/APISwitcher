@@ -11,6 +11,7 @@ public partial class MainViewModel : ObservableObject
 {
     private readonly ConfigService _configService;
     private readonly BalanceService _balanceService;
+    private readonly SubscriptionService _subscriptionService;
 
     [ObservableProperty]
     private ObservableCollection<Profile> profiles = new();
@@ -21,10 +22,17 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool isLoading;
 
-    public MainViewModel(ConfigService configService, BalanceService balanceService)
+    [ObservableProperty]
+    private SubscriptionInfo? activeSubscriptionInfo;
+
+    [ObservableProperty]
+    private bool showSubscriptionPanel;
+
+    public MainViewModel(ConfigService configService, BalanceService balanceService, SubscriptionService subscriptionService)
     {
         _configService = configService;
         _balanceService = balanceService;
+        _subscriptionService = subscriptionService;
     }
 
     public async Task InitializeAsync()
@@ -32,6 +40,8 @@ public partial class MainViewModel : ObservableObject
         await LoadProfilesAsync();
         // 启动时查询所有配置的余额
         await QueryAllBalancesAsync();
+        // 查询当前激活配置的订阅信息
+        await QueryActiveSubscriptionAsync();
     }
 
     /// <summary>
@@ -40,6 +50,7 @@ public partial class MainViewModel : ObservableObject
     public async Task OnWindowActivatedAsync()
     {
         await QueryAllBalancesAsync();
+        await QueryActiveSubscriptionAsync();
     }
 
     [RelayCommand]
@@ -99,6 +110,9 @@ public partial class MainViewModel : ObservableObject
 
             // 切换后查询该配置的余额
             await QuerySingleBalanceAsync(profile);
+
+            // 查询订阅信息
+            await QueryActiveSubscriptionAsync();
         }
         catch (Exception ex)
         {
@@ -116,6 +130,7 @@ public partial class MainViewModel : ObservableObject
     {
         await LoadProfilesAsync();
         await QueryAllBalancesAsync();
+        await QueryActiveSubscriptionAsync();
     }
 
     /// <summary>
@@ -182,6 +197,57 @@ public partial class MainViewModel : ObservableObject
                     HasError = true,
                     ErrorMessage = ex.Message,
                     FailureCount = 1
+                };
+            }
+        }
+    }
+
+    /// <summary>
+    /// 查询当前激活配置的订阅信息
+    /// </summary>
+    private async Task QueryActiveSubscriptionAsync()
+    {
+        // 找到激活的配置
+        var activeProfile = Profiles.FirstOrDefault(p => p.IsActive);
+
+        // 检查是否应该显示订阅面板
+        ShowSubscriptionPanel = activeProfile?.ShouldShowSubscription == true;
+
+        if (!ShowSubscriptionPanel)
+        {
+            ActiveSubscriptionInfo = null;
+            return;
+        }
+
+        try
+        {
+            if (ActiveSubscriptionInfo == null)
+            {
+                ActiveSubscriptionInfo = new SubscriptionInfo { IsLoading = true };
+            }
+            else
+            {
+                ActiveSubscriptionInfo.IsLoading = true;
+            }
+
+            var subscriptionInfo = await _subscriptionService.QuerySubscriptionAsync(activeProfile!);
+            ActiveSubscriptionInfo = subscriptionInfo;
+        }
+        catch (Exception ex)
+        {
+            if (ActiveSubscriptionInfo != null)
+            {
+                ActiveSubscriptionInfo.IsLoading = false;
+                ActiveSubscriptionInfo.HasError = true;
+                ActiveSubscriptionInfo.ErrorMessage = ex.Message;
+            }
+            else
+            {
+                ActiveSubscriptionInfo = new SubscriptionInfo
+                {
+                    IsLoading = false,
+                    HasError = true,
+                    ErrorMessage = ex.Message
                 };
             }
         }

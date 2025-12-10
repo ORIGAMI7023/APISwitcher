@@ -31,4 +31,23 @@ public partial class Profile : ObservableObject
     /// </summary>
     [JsonIgnore]
     public bool ShouldShowBalance => BalanceApi != null;
+
+    /// <summary>
+    /// 订阅API配置（可选，如果为null则不显示订阅信息）
+    /// </summary>
+    [JsonPropertyName("subscriptionApi")]
+    public SubscriptionApiConfig? SubscriptionApi { get; set; }
+
+    /// <summary>
+    /// 订阅信息（运行时数据，不序列化）
+    /// </summary>
+    [JsonIgnore]
+    [ObservableProperty]
+    private SubscriptionInfo? subscriptionInfo;
+
+    /// <summary>
+    /// 是否应该显示订阅信息
+    /// </summary>
+    [JsonIgnore]
+    public bool ShouldShowSubscription => SubscriptionApi != null;
 }

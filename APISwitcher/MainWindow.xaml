@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:APISwitcher"
         mc:Ignorable="d"
-        Title="Claude Code 账号切换工具" Height="500" Width="750"
+        Title="Claude Code 账号切换工具" Height="700" Width="780"
         WindowStartupLocation="CenterScreen"
         Icon="{StaticResource AppIcon}"
         KeyboardNavigation.TabNavigation="None">
@@ -13,6 +13,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -112,8 +113,150 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
+        <!-- 订阅信息面板 -->
+        <Border Grid.Row="2"
+                Margin="0,10,0,0"
+                Padding="15"
+                Background="#F8F9FA"
+                BorderBrush="#DEE2E6"
+                BorderThickness="1"
+                CornerRadius="8"
+                Visibility="{Binding ShowSubscriptionPanel, Converter={StaticResource BoolToVisibilityConverter}}">
+            <StackPanel>
+                <!-- 标题 -->
+                <TextBlock Text="月卡订阅信息"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           Margin="0,0,0,10"/>
+
+                <!-- 加载状态 -->
+                <TextBlock Text="加载中..."
+                           FontSize="12"
+                           Foreground="#757575"
+                           Visibility="{Binding ActiveSubscriptionInfo.IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                <!-- 错误状态 -->
+                <TextBlock Text="{Binding ActiveSubscriptionInfo.ErrorMessage}"
+                           FontSize="12"
+                           Foreground="#D32F2F"
+                           TextWrapping="Wrap"
+                           Visibility="{Binding ActiveSubscriptionInfo.HasError, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+                <!-- 订阅数据显示 -->
+                <StackPanel>
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding ActiveSubscriptionInfo.IsLoading}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding ActiveSubscriptionInfo.HasError}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+
+                    <!-- 日限额 -->
+                    <StackPanel Margin="0,5">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="日限额" FontSize="13" Margin="0,0,10,0"/>
+                            <TextBlock Grid.Column="2" FontSize="12" Foreground="#666">
+                                <Run Text="{Binding ActiveSubscriptionInfo.DailyQuotaUsedUsd, Mode=OneWay}"/>
+                                <Run Text=" / "/>
+                                <Run Text="{Binding ActiveSubscriptionInfo.DailyQuotaLimitUsd, Mode=OneWay}"/>
+                                <Run Text=" ("/>
+                                <Run Text="{Binding ActiveSubscriptionInfo.DailyUsagePercent, StringFormat={}{0:F1}, Mode=OneWay}"/>
+                                <Run Text="%)"/>
+                            </TextBlock>
+                        </Grid>
+                        <ProgressBar Height="8"
+                                     Margin="0,3,0,0"
+                                     Value="{Binding ActiveSubscriptionInfo.DailyUsagePercent, Mode=OneWay}"
+                                     Maximum="100"/>
+                    </StackPanel>
+
+                    <!-- 周限额 -->
+                    <StackPanel Margin="0,5">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="周限额" FontSize="13" Margin="0,0,10,0"/>
+                            <TextBlock Grid.Column="2" FontSize="12" Foreground="#666">
+                                <Run Text="{Binding ActiveSubscriptionInfo.WeeklyQuotaUsedUsd, Mode=OneWay}"/>
+                                <Run Text=" / "/>
+                                <Run Text="{Binding ActiveSubscriptionInfo.WeeklyQuotaLimitUsd, Mode=OneWay}"/>
+                                <Run Text=" ("/>
+                                <Run Text="{Binding ActiveSubscriptionInfo.WeeklyUsagePercent, StringFormat={}{0:F1}, Mode=OneWay}"/>
+                                <Run Text="%)"/>
+                            </TextBlock>
+                        </Grid>
+                        <ProgressBar Height="8"
+                                     Margin="0,3,0,0"
+                                     Value="{Binding ActiveSubscriptionInfo.WeeklyUsagePercent, Mode=OneWay}"
+                                     Maximum="100"/>
+                    </StackPanel>
+
+                    <!-- 总限额 -->
+                    <StackPanel Margin="0,5">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="总限额" FontSize="13" Margin="0,0,10,0"/>
+                            <TextBlock Grid.Column="2" FontSize="12" Foreground="#666">
+                                <Run Text="{Binding ActiveSubscriptionInfo.TotalQuotaUsedUsd, Mode=OneWay}"/>
+                                <Run Text=" / "/>
+                                <Run Text="{Binding ActiveSubscriptionInfo.TotalQuotaLimitUsd, Mode=OneWay}"/>
+                                <Run Text=" ("/>
+                                <Run Text="{Binding ActiveSubscriptionInfo.TotalUsagePercent, StringFormat={}{0:F1}, Mode=OneWay}"/>
+                                <Run Text="%)"/>
+                            </TextBlock>
+                        </Grid>
+                        <ProgressBar Height="8"
+                                     Margin="0,3,0,0"
+                                     Value="{Binding ActiveSubscriptionInfo.TotalUsagePercent, Mode=OneWay}"
+                                     Maximum="100"/>
+                    </StackPanel>
+
+                    <!-- 到期时间 -->
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Column="0"
+                                   Text="到期时间："
+                                   FontSize="13"
+                                   Margin="0,0,5,0"/>
+                        <TextBlock Grid.Column="1" FontSize="13">
+                            <Run Text="{Binding ActiveSubscriptionInfo.ExpireTimeFormatted, Mode=OneWay}"/>
+                            <Run Text=" (剩余 "/>
+                            <Run Text="{Binding ActiveSubscriptionInfo.DaysRemaining, Mode=OneWay}"/>
+                            <Run Text=" 天)"/>
+                        </TextBlock>
+                    </Grid>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
         <!-- 操作按钮 -->
-        <StackPanel Grid.Row="2"
+        <StackPanel Grid.Row="3"
                     Orientation="Horizontal"
                     HorizontalAlignment="Center"
                     Margin="0,20,0,0">
@@ -127,7 +270,7 @@
         </StackPanel>
 
         <!-- 状态栏 -->
-        <Border Grid.Row="3"
+        <Border Grid.Row="4"
                 Background="#F5F5F5"
                 Padding="10"
                 CornerRadius="5"
