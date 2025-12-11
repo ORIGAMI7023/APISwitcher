@@ -5,14 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:APISwitcher"
         mc:Ignorable="d"
-        Title="Claude Code 账号切换工具" Height="700" Width="780"
+        Title="Claude Code 账号切换工具" Height="460" Width="780"
         WindowStartupLocation="CenterScreen"
         Icon="{StaticResource AppIcon}"
         KeyboardNavigation.TabNavigation="None">
     <Grid Margin="20">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="250"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -28,12 +28,13 @@
         </StackPanel>
 
         <!-- 配置按钮 -->
-        <ItemsControl Grid.Row="1" ItemsSource="{Binding Profiles}">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding Profiles}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Border Width="200"
@@ -112,16 +113,23 @@
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
+        </ScrollViewer>
 
         <!-- 订阅信息面板 -->
-        <Border Grid.Row="2"
+        <Border x:Name="SubscriptionPanel"
+                Grid.Row="2"
                 Margin="0,10,0,0"
                 Padding="15"
                 Background="#F8F9FA"
                 BorderBrush="#DEE2E6"
                 BorderThickness="1"
                 CornerRadius="8"
-                Visibility="{Binding ShowSubscriptionPanel, Converter={StaticResource BoolToVisibilityConverter}}">
+                Visibility="Collapsed"
+                Opacity="0"
+                RenderTransformOrigin="0.5,0">
+            <Border.RenderTransform>
+                <ScaleTransform ScaleY="0"/>
+            </Border.RenderTransform>
             <StackPanel>
                 <!-- 标题行（使用Grid避免布局跳动） -->
                 <Grid Margin="0,0,0,10" Height="22">

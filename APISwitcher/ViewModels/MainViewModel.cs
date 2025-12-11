@@ -210,14 +210,29 @@ public partial class MainViewModel : ObservableObject
         // 找到激活的配置
         var activeProfile = Profiles.FirstOrDefault(p => p.IsActive);
 
-        // 检查是否应该显示订阅面板
-        ShowSubscriptionPanel = activeProfile?.ShouldShowSubscription == true;
+        // 检查是否应该显示订阅面板（只有 Claude_Opus_4.5 才显示）
+        var shouldShow = activeProfile?.Name == "Claude_Opus_4.5" &&
+                         activeProfile?.ShouldShowSubscription == true;
 
-        if (!ShowSubscriptionPanel)
+        if (!shouldShow)
         {
-            ActiveSubscriptionInfo = null;
+            // 先清除错误状态，避免收缩动画时显示"更新失败"
+            if (ActiveSubscriptionInfo != null)
+            {
+                ActiveSubscriptionInfo.HasError = false;
+                ActiveSubscriptionInfo.ErrorMessage = null;
+            }
+
+            // 触发面板隐藏动画
+            ShowSubscriptionPanel = false;
+
+            // 动画完成后再清空订阅信息（延迟执行）
+            _ = Task.Delay(350).ContinueWith(_ => ActiveSubscriptionInfo = null);
             return;
         }
+
+        // 显示面板
+        ShowSubscriptionPanel = true;
 
         try
         {
