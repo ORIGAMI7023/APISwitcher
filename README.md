@@ -2,48 +2,60 @@
 
 <div align="center">
 
-一个用于快速切换 Claude Code 配置文件的 Windows 桌面应用程序
+一个用于快速切换 Claude Code 配置文件的跨平台桌面应用程序
 
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![Swift](https://img.shields.io/badge/Swift-6.0-F05138?logo=swift)](https://swift.org/)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Windows-0078D6?logo=windows)](https://www.microsoft.com/windows)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS-0078D6)](https://github.com)
 
-[功能特性](#功能特性) • [快速开始](#快速开始) • [使用方法](#使用方法) • [开发指南](#开发指南) • [贡献](#贡献)
+[功能特性](#功能特性) • [快速开始](#快速开始) • [使用方法](#使用方法) • [开发指南](#开发指南)
 
 </div>
 
 ---
 
-## 📖 简介
+## 简介
 
 APISwitcher 是一个轻量级的桌面工具，专为 [Claude Code CLI](https://www.code-cli.com/) 用户设计。它允许你在多个 API 配置之间快速切换，无需手动编辑配置文件。无论你是在官方 API 和第三方 API 之间切换，还是管理多个账号，APISwitcher 都能让这个过程变得简单高效。
 
-## ✨ 功能特性
+> **平台支持说明**
+> - **Windows 版本**：已完成开发，功能完善，推荐使用
+> - **macOS 版本**：正在积极开发中，基础功能已实现，部分高级特性仍在完善
 
-- 📋 **多配置管理** - 在一个界面中管理所有 Claude Code 配置
-- 🔄 **一键切换** - 点击即可切换到不同的 API 配置
-- 🎯 **智能识别** - 自动识别并高亮显示当前激活的配置
-- 💰 **余额查询** - 支持查询和显示 API 账户余额信息（可选）
-- 💾 **自动同步** - 配置更改立即写入 Claude Code 设置文件
-- 🎨 **现代界面** - 简洁直观的 WPF 界面设计
-- ⚡ **轻量快速** - 启动迅速，资源占用低
+## 功能特性
 
-## 🚀 快速开始
+- **多配置管理** - 在一个界面中管理所有 Claude Code 配置
+- **一键切换** - 点击即可切换到不同的 API 配置
+- **智能识别** - 自动识别并高亮显示当前激活的配置
+- **余额查询** - 支持查询和显示 API 账户余额信息（可选）
+- **自动同步** - 配置更改立即写入 Claude Code 设置文件
+- **现代界面** - 简洁直观的 WPF 界面设计
+- **轻量快速** - 启动迅速，资源占用低
+
+## 快速开始
 
 ### 系统要求
 
+#### Windows 版本
 - Windows 10/11
 - [.NET 8.0 Runtime](https://dotnet.microsoft.com/download/dotnet/8.0)
 
+#### macOS 版本（开发中）
+- macOS 14.0 (Sonoma) 或更高版本
+- 不需要额外的运行时依赖
+
 ### 安装
 
-#### 方式一：下载预编译版本（推荐）
+#### Windows 版本
+
+**方式一：下载预编译版本（推荐）**
 
 1. 前往 [Releases](../../releases) 页面下载最新版本
 2. 解压到任意目录
 3. 双击运行 `APISwitcher.exe`
 
-#### 方式二：从源码构建
+**方式二：从源码构建**
 
 ```bash
 # 克隆仓库
@@ -57,7 +69,25 @@ dotnet build APISwitcher/APISwitcher.csproj -c Release
 dotnet run --project APISwitcher/APISwitcher.csproj
 ```
 
-## 📚 使用方法
+#### macOS 版本（开发中）
+
+**从源码构建**
+
+```bash
+# 克隆仓库
+git clone https://github.com/yourusername/APISwitcher.git
+cd APISwitcher/APISwitcher.macOS
+
+# 构建应用
+./build-app.sh
+
+# 运行应用
+open .build/APISwitcher.app
+```
+
+> **注意**：macOS 版本当前仍在开发中，可能存在未完成的功能或 Bug。
+
+## 使用方法
 
 ### 首次配置
 
@@ -201,28 +231,36 @@ dotnet run --project APISwitcher/APISwitcher.csproj
 - `extraHeaders` 需要从抓包的请求头中复制，确保包含必要的认证信息
 - 字段路径使用点号分隔，例如 `data.user.balance` 表示访问 `response.data.user.balance`
 
-## 🔧 工作原理
+## 工作原理
 
 APISwitcher 通过以下方式实现配置切换：
 
-1. 📂 读取应用程序目录下的 `app_profiles.json` 文件
-2. 📄 读取用户目录下的 `~/.claude/settings.json` 文件
-3. 🔍 智能比对配置内容，自动识别当前激活的配置
-4. ✍️ 切换时将选中的配置写入 `~/.claude/settings.json`
+1. 读取应用程序目录下的 `app_profiles.json` 文件
+2. 读取用户目录下的 `~/.claude/settings.json` 文件
+3. 智能比对配置内容，自动识别当前激活的配置
+4. 切换时将选中的配置写入 `~/.claude/settings.json`
 
 > **注意**：切换配置后需要重启 Claude Code 才能使新配置生效。
 
-## 🛠️ 开发指南
+## 开发指南
 
 ### 技术栈
 
+#### Windows 版本
 - **框架**: .NET 8.0 + WPF
 - **架构模式**: MVVM (使用 CommunityToolkit.Mvvm)
 - **依赖注入**: Microsoft.Extensions.DependencyInjection
 - **数据绑定**: 双向绑定 + 命令模式
 
+#### macOS 版本
+- **语言**: Swift 6.0
+- **框架**: SwiftUI
+- **架构模式**: MVVM (使用 @Observable)
+- **构建系统**: Swift Package Manager
+
 ### 项目结构
 
+#### Windows 版本 (APISwitcher/)
 ```
 APISwitcher/
 ├── Models/              # 数据模型
@@ -238,7 +276,30 @@ APISwitcher/
 └── app_profiles.json    # 配置文件存储
 ```
 
+#### macOS 版本 (APISwitcher.macOS/)
+```
+APISwitcher.macOS/
+├── APISwitcher/
+│   ├── App/             # 应用入口
+│   │   └── APISwitcherApp.swift
+│   ├── Models/          # 数据模型
+│   │   ├── Profile.swift
+│   │   └── ClaudeSettings.swift
+│   ├── ViewModels/      # 视图模型
+│   │   └── MainViewModel.swift
+│   ├── Views/           # 视图
+│   │   ├── MainView.swift
+│   │   └── ProfileCardView.swift
+│   ├── Services/        # 服务层
+│   │   └── ConfigService.swift
+│   └── Resources/       # 资源文件
+│       └── AppIcon.icns
+└── build-app.sh         # 构建脚本
+```
+
 ### 本地开发
+
+#### Windows 版本
 
 ```bash
 # 克隆仓库
@@ -258,31 +319,47 @@ dotnet run --project APISwitcher/APISwitcher.csproj
 dotnet publish APISwitcher/APISwitcher.csproj -c Release
 ```
 
+#### macOS 版本
+
+```bash
+# 克隆仓库
+git clone https://github.com/yourusername/APISwitcher.git
+cd APISwitcher/APISwitcher.macOS
+
+# 构建项目（Release 模式）
+swift build -c release
+
+# 或使用构建脚本生成 .app 包
+./build-app.sh
+
+# 运行应用
+open .build/APISwitcher.app
+```
+
 ### 调试
 
+#### Windows
 - **Visual Studio**: 打开 `APISwitcher.slnx`，按 F5 开始调试
 - **VS Code**: 使用 C# Dev Kit 扩展打开项目文件夹
 
-## 🤝 贡献
+#### macOS
+- **Xcode**: 使用 `swift package generate-xcodeproj` 生成项目文件
+- **VS Code**: 使用 Swift 扩展打开 `APISwitcher.macOS` 文件夹
 
-欢迎各种形式的贡献！
+## 常见问题
 
-### 如何贡献
+<details>
+<summary><b>Q: macOS 版本开发进度如何？</b></summary>
 
-1. Fork 本仓库
-2. 创建你的特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交你的更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启一个 Pull Request
-
-### 贡献指南
-
-- 遵循现有的代码风格和架构模式
-- 为新功能添加适当的注释
-- 确保代码能够正常构建和运行
-- 在 PR 中清晰描述你的更改
-
-## ❓ 常见问题
+A: macOS 版本当前正在开发中，已实现的功能包括：
+- 配置文件加载和切换
+- 主窗口 UI 和菜单栏集成
+- 配置激活状态检测
+- 与 Windows 版本一致的 UI 布局
+- 余额查询功能（部分完成）
+- 订阅信息显示（部分完成）
+- 配置增删改功能（开发中）
+</details>
 
 <details>
 <summary><b>Q: 切换配置后没有生效？</b></summary>
@@ -331,26 +408,13 @@ A: 可能的原因：
 - 网络连接问题或 API 服务不可用
 </details>
 
-## 🔒 安全提示
+## 安全提示
 
-- ⚠️ **不要**将包含 API 密钥的 `app_profiles.json` 提交到公共仓库
-- 📝 建议将 `app_profiles.json` 添加到 `.gitignore`
-- 🔐 妥善保管你的 API 密钥和认证令牌
-- 💾 定期备份你的配置文件
+- 不要将包含 API 密钥的 `app_profiles.json` 提交到公共仓库
+- 建议将 `app_profiles.json` 添加到 `.gitignore`
+- 妥善保管你的 API 密钥和认证令牌
+- 定期备份你的配置文件
 
-## 📮 联系方式
+## License
 
-如有问题或建议，欢迎：
-- 提交 [Issue](../../issues)
-- 发起 [Discussion](../../discussions)
-- 提交 Pull Request
-
----
-
-<div align="center">
-
-**如果这个项目对你有帮助，请给它一个 ⭐️**
-
-Made with ❤️ for Claude Code users
-
-</div>
+MIT
