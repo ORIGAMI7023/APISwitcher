@@ -109,19 +109,16 @@ struct ProfileCardView: View {
         )
         .contentShape(Rectangle()) // 整个区域可点击
         .onTapGesture {
-            if !profile.isActive {
-                Task {
-                    await viewModel.switchProfile(profile)
-                }
+            // 允许点击已选中的项目，强制重新写入
+            Task {
+                await viewModel.switchProfile(profile)
             }
         }
         .onHover { isHovered in
-            if !profile.isActive {
-                if isHovered {
-                    NSCursor.pointingHand.push()
-                } else {
-                    NSCursor.pop()
-                }
+            if isHovered {
+                NSCursor.pointingHand.push()
+            } else {
+                NSCursor.pop()
             }
         }
     }

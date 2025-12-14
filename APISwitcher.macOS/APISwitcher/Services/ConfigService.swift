@@ -67,6 +67,7 @@ class ConfigService {
     /// 标记激活的配置（通过匹配关键字段）
     func markActiveProfile(_ profiles: [Profile]) -> [Profile] {
         guard let currentSettings = try? loadClaudeSettings() else {
+            print("⚠️ 无法加载当前 Claude 设置")
             return profiles
         }
 
@@ -76,6 +77,10 @@ class ConfigService {
         let currentEnv = currentDict["env"] as? [String: Any] ?? [:]
         let currentBaseUrl = currentEnv["ANTHROPIC_BASE_URL"] as? String ?? ""
         let currentAuthToken = currentEnv["ANTHROPIC_AUTH_TOKEN"] as? String ?? ""
+
+        print("🔍 当前 Claude 设置:")
+        print("   BASE_URL: \(currentBaseUrl)")
+        print("   AUTH_TOKEN: \(currentAuthToken.prefix(20))...")
 
         return profiles.map { profile in
             var updated = profile
@@ -91,6 +96,8 @@ class ConfigService {
                                !profileAuthToken.isEmpty &&
                                profileBaseUrl == currentBaseUrl &&
                                profileAuthToken == currentAuthToken
+
+            print("   配置[\(profile.name)]: baseUrl=\(profileBaseUrl.prefix(30))... token=\(profileAuthToken.prefix(20))... -> isActive=\(updated.isActive)")
 
             return updated
         }

@@ -29,7 +29,13 @@ mkdir -p "$RESOURCES_DIR"
 # 4. 复制可执行文件
 cp "$BUILD_DIR/release/$APP_NAME" "$MACOS_DIR/"
 
-# 5. 创建 Info.plist (使用实际值替换变量)
+# 5. 复制应用图标
+if [ -f "APISwitcher/Resources/AppIcon.icns" ]; then
+    cp "APISwitcher/Resources/AppIcon.icns" "$RESOURCES_DIR/"
+    echo "📱 App icon copied"
+fi
+
+# 6. 创建 Info.plist (使用实际值替换变量)
 cat > "$CONTENTS_DIR/Info.plist" << 'EOF'
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -39,6 +45,8 @@ cat > "$CONTENTS_DIR/Info.plist" << 'EOF'
     <string>zh_CN</string>
     <key>CFBundleExecutable</key>
     <string>APISwitcher</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
     <key>CFBundleIdentifier</key>
     <string>com.origami.apiswitcher</string>
     <key>CFBundleInfoDictionaryVersion</key>
@@ -69,7 +77,7 @@ cat > "$CONTENTS_DIR/Info.plist" << 'EOF'
 </plist>
 EOF
 
-# 6. 复制资源文件（如果存在）
+# 7. 复制资源文件（如果存在）
 if [ -d "$BUILD_DIR/release/APISwitcher_APISwitcher.bundle" ]; then
     cp -R "$BUILD_DIR/release/APISwitcher_APISwitcher.bundle"/* "$RESOURCES_DIR/" 2>/dev/null || true
 fi

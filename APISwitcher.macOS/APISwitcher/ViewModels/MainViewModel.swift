@@ -50,8 +50,7 @@ class MainViewModel {
 
     /// 切换配置
     func switchProfile(_ profile: Profile) async {
-        guard !profile.isActive else { return }
-
+        // 移除已选中检查，允许强制重新写入
         statusMessage = "正在切换到 \(profile.name)..."
         isLoading = true
 

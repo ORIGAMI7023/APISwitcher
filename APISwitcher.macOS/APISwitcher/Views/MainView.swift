@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MainView: View {
-    @State private var viewModel = MainViewModel()
+    @Bindable var viewModel: MainViewModel
     @State private var refreshTrigger = false
 
     var body: some View {
@@ -92,6 +92,7 @@ struct MainView: View {
             }
         }
         .task {
+            print("🎬 MainView task started")
             await viewModel.initialize()
             viewModel.refreshUI = {
                 refreshTrigger.toggle()
@@ -102,5 +103,5 @@ struct MainView: View {
 }
 
 #Preview {
-    MainView()
+    MainView(viewModel: MainViewModel())
 }
