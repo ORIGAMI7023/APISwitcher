@@ -1,0 +1,47 @@
+[
+  {
+    "id": "00000000-0000-0000-0000-000000000001",
+    "name": "示例配置 - Anthropic 官方",
+    "balanceApi": "https://api.anthropic.com/v1/balance",
+    "authMode": "header",
+    "authKey": "x-api-key",
+    "apiKey": "sk-ant-xxx",
+    "balanceJsonPath": "$.balance.amount",
+    "subscriptionApi": "",
+    "subscriptionJsonPath": "",
+    "settings": {
+      "claude": {
+        "apiKey": "sk-ant-xxx",
+        "model": "claude-sonnet-4.5"
+      }
+    }
+  },
+  {
+    "id": "00000000-0000-0000-0000-000000000002",
+    "name": "示例配置 - 自定义端点",
+    "balanceApi": "https://custom-api.example.com/balance",
+    "authMode": "header",
+    "authKey": "Authorization",
+    "apiKey": "Bearer YOUR_API_KEY",
+    "balanceJsonPath": "$.data.balance",
+    "subscriptionApi": "https://custom-api.example.com/subscription",
+    "subscriptionJsonPath": "$.data",
+    "settings": {
+      "claude": {
+        "apiKey": "sk-custom-xxx",
+        "model": "claude-sonnet-4.5",
+        "baseURL": "https://custom-api.example.com/v1"
+      },
+      "mcpServers": {
+        "filesystem": {
+          "command": "npx",
+          "args": [
+            "-y",
+            "@modelcontextprotocol/server-filesystem",
+            "/Users/username/Documents"
+          ]
+        }
+      }
+    }
+  }
+]

@@ -1,0 +1,34 @@
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+DerivedData/
+build/
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+
+# Swift Package Manager
+.swiftpm/
+Packages/
+.build/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Thumbnails
+._*
+
+# Configuration files
+app_profiles.json
+
+# IDE
+.idea/
+*.swp
+*~
+
+# Build artifacts
+*.ipa
+*.dSYM.zip
+*.dSYM

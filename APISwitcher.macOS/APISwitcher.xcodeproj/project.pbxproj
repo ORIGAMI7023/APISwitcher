@@ -1,0 +1,475 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		100001 /* APISwitcherApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200001 /* APISwitcherApp.swift */; };
+		100002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200002 /* AppDelegate.swift */; };
+		100003 /* Profile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200003 /* Profile.swift */; };
+		100004 /* ClaudeSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200004 /* ClaudeSettings.swift */; };
+		100005 /* BalanceInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200005 /* BalanceInfo.swift */; };
+		100006 /* SubscriptionInfo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200006 /* SubscriptionInfo.swift */; };
+		100007 /* ConfigService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200007 /* ConfigService.swift */; };
+		100008 /* BalanceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200008 /* BalanceService.swift */; };
+		100009 /* SubscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200009 /* SubscriptionService.swift */; };
+		100010 /* MainViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200010 /* MainViewModel.swift */; };
+		100011 /* ProfileFormViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200011 /* ProfileFormViewModel.swift */; };
+		100012 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200012 /* MainView.swift */; };
+		100013 /* ProfileCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200013 /* ProfileCardView.swift */; };
+		100014 /* ProfileFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200014 /* ProfileFormView.swift */; };
+		100015 /* BalanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200015 /* BalanceView.swift */; };
+		100016 /* SubscriptionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200016 /* SubscriptionView.swift */; };
+		100017 /* AnyCodableValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200017 /* AnyCodableValue.swift */; };
+		100018 /* JSONSubsetMatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200018 /* JSONSubsetMatcher.swift */; };
+		100019 /* PathHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200019 /* PathHelper.swift */; };
+		100020 /* JSONPathExtractor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 200020 /* JSONPathExtractor.swift */; };
+		100021 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 200021 /* Assets.xcassets */; };
+		100022 /* app_profiles.example.json in Resources */ = {isa = PBXBuildFile; fileRef = 200022 /* app_profiles.example.json */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		200001 /* APISwitcherApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APISwitcherApp.swift; sourceTree = "<group>"; };
+		200002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		200003 /* Profile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Profile.swift; sourceTree = "<group>"; };
+		200004 /* ClaudeSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClaudeSettings.swift; sourceTree = "<group>"; };
+		200005 /* BalanceInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceInfo.swift; sourceTree = "<group>"; };
+		200006 /* SubscriptionInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionInfo.swift; sourceTree = "<group>"; };
+		200007 /* ConfigService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigService.swift; sourceTree = "<group>"; };
+		200008 /* BalanceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceService.swift; sourceTree = "<group>"; };
+		200009 /* SubscriptionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionService.swift; sourceTree = "<group>"; };
+		200010 /* MainViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainViewModel.swift; sourceTree = "<group>"; };
+		200011 /* ProfileFormViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileFormViewModel.swift; sourceTree = "<group>"; };
+		200012 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		200013 /* ProfileCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileCardView.swift; sourceTree = "<group>"; };
+		200014 /* ProfileFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileFormView.swift; sourceTree = "<group>"; };
+		200015 /* BalanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BalanceView.swift; sourceTree = "<group>"; };
+		200016 /* SubscriptionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionView.swift; sourceTree = "<group>"; };
+		200017 /* AnyCodableValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCodableValue.swift; sourceTree = "<group>"; };
+		200018 /* JSONSubsetMatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONSubsetMatcher.swift; sourceTree = "<group>"; };
+		200019 /* PathHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PathHelper.swift; sourceTree = "<group>"; };
+		200020 /* JSONPathExtractor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONPathExtractor.swift; sourceTree = "<group>"; };
+		200021 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		200022 /* app_profiles.example.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = app_profiles.example.json; sourceTree = "<group>"; };
+		200023 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		300001 /* APISwitcher.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = APISwitcher.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		400001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		500001 = {
+			isa = PBXGroup;
+			children = (
+				500003 /* APISwitcher */,
+				500002 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		500002 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				300001 /* APISwitcher.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		500003 /* APISwitcher */ = {
+			isa = PBXGroup;
+			children = (
+				500004 /* App */,
+				500005 /* Models */,
+				500006 /* Services */,
+				500007 /* ViewModels */,
+				500008 /* Views */,
+				500009 /* Utilities */,
+				500010 /* Resources */,
+				200023 /* Info.plist */,
+			);
+			path = APISwitcher;
+			sourceTree = "<group>";
+		};
+		500004 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				200001 /* APISwitcherApp.swift */,
+				200002 /* AppDelegate.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		500005 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				200003 /* Profile.swift */,
+				200004 /* ClaudeSettings.swift */,
+				200005 /* BalanceInfo.swift */,
+				200006 /* SubscriptionInfo.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		500006 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				200007 /* ConfigService.swift */,
+				200008 /* BalanceService.swift */,
+				200009 /* SubscriptionService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		500007 /* ViewModels */ = {
+			isa = PBXGroup;
+			children = (
+				200010 /* MainViewModel.swift */,
+				200011 /* ProfileFormViewModel.swift */,
+			);
+			path = ViewModels;
+			sourceTree = "<group>";
+		};
+		500008 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				200012 /* MainView.swift */,
+				200013 /* ProfileCardView.swift */,
+				200014 /* ProfileFormView.swift */,
+				200015 /* BalanceView.swift */,
+				200016 /* SubscriptionView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		500009 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				200017 /* AnyCodableValue.swift */,
+				200018 /* JSONSubsetMatcher.swift */,
+				200019 /* PathHelper.swift */,
+				200020 /* JSONPathExtractor.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		500010 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				200021 /* Assets.xcassets */,
+				200022 /* app_profiles.example.json */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		600001 /* APISwitcher */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 700001 /* Build configuration list for PBXNativeTarget "APISwitcher" */;
+			buildPhases = (
+				400002 /* Sources */,
+				400001 /* Frameworks */,
+				400003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = APISwitcher;
+			productName = APISwitcher;
+			productReference = 300001 /* APISwitcher.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		800001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					600001 = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 700002 /* Build configuration list for PBXProject "APISwitcher" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = "zh-Hans";
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				"zh-Hans",
+			);
+			mainGroup = 500001;
+			productRefGroup = 500002 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				600001 /* APISwitcher */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		400003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				100021 /* Assets.xcassets in Resources */,
+				100022 /* app_profiles.example.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		400002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				100001 /* APISwitcherApp.swift in Sources */,
+				100002 /* AppDelegate.swift in Sources */,
+				100003 /* Profile.swift in Sources */,
+				100004 /* ClaudeSettings.swift in Sources */,
+				100005 /* BalanceInfo.swift in Sources */,
+				100006 /* SubscriptionInfo.swift in Sources */,
+				100007 /* ConfigService.swift in Sources */,
+				100008 /* BalanceService.swift in Sources */,
+				100009 /* SubscriptionService.swift in Sources */,
+				100010 /* MainViewModel.swift in Sources */,
+				100011 /* ProfileFormViewModel.swift in Sources */,
+				100012 /* MainView.swift in Sources */,
+				100013 /* ProfileCardView.swift in Sources */,
+				100014 /* ProfileFormView.swift in Sources */,
+				100015 /* BalanceView.swift in Sources */,
+				100016 /* SubscriptionView.swift in Sources */,
+				100017 /* AnyCodableValue.swift in Sources */,
+				100018 /* JSONSubsetMatcher.swift in Sources */,
+				100019 /* PathHelper.swift in Sources */,
+				100020 /* JSONPathExtractor.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		900001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		900002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+			};
+			name = Release;
+		};
+		900003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = APISwitcher/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "API Switcher";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.apiswitcher.macos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		900004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = APISwitcher/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "API Switcher";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.apiswitcher.macos;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		700001 /* Build configuration list for PBXNativeTarget "APISwitcher" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				900003 /* Debug */,
+				900004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		700002 /* Build configuration list for PBXProject "APISwitcher" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				900001 /* Debug */,
+				900002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 800001 /* Project object */;
+}
