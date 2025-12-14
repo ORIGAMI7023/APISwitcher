@@ -63,7 +63,91 @@
                                         CommandParameter="{Binding}"
                                         MouseAction="LeftClick"/>
                         </Border.InputBindings>
-                        <StackPanel VerticalAlignment="Center">
+                        <Grid>
+                            <!-- 操作按钮 -->
+                            <StackPanel Orientation="Horizontal"
+                                       HorizontalAlignment="Right"
+                                       VerticalAlignment="Top"
+                                       Margin="0,-5,-5,0">
+                                <!-- 编辑按钮 -->
+                                <Button Content="✏️"
+                                       Width="24"
+                                       Height="24"
+                                       FontSize="12"
+                                       Padding="0"
+                                       Margin="2,0"
+                                       Background="Transparent"
+                                       BorderThickness="0"
+                                       Cursor="Hand"
+                                       ToolTip="编辑配置"
+                                       Command="{Binding DataContext.ShowEditViewCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                       CommandParameter="{Binding}">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}"
+                                                               CornerRadius="3">
+                                                            <ContentPresenter HorizontalAlignment="Center"
+                                                                            VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#E0E0E0"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+
+                                <!-- 删除按钮（仅非激活配置显示） -->
+                                <Button Content="×"
+                                       Width="24"
+                                       Height="24"
+                                       FontSize="16"
+                                       Padding="0"
+                                       Margin="2,0"
+                                       Background="Transparent"
+                                       BorderThickness="0"
+                                       Foreground="#D32F2F"
+                                       Cursor="Hand"
+                                       ToolTip="删除配置"
+                                       Command="{Binding DataContext.DeleteProfileCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                       CommandParameter="{Binding}">
+                                    <Button.Style>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border Background="{TemplateBinding Background}"
+                                                               CornerRadius="3">
+                                                            <ContentPresenter HorizontalAlignment="Center"
+                                                                            VerticalAlignment="Center"/>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                            <Style.Triggers>
+                                                <!-- 激活的配置不显示删除按钮 -->
+                                                <DataTrigger Binding="{Binding IsActive}" Value="True">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter Property="Background" Value="#FFCDD2"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </StackPanel>
+
+                            <!-- 配置内容 -->
+                            <StackPanel VerticalAlignment="Center">
                             <!-- Profile名称 -->
                             <TextBlock Text="{Binding Name}"
                                        FontSize="16"
@@ -109,6 +193,7 @@
                                 </TextBlock>
                             </Border>
                         </StackPanel>
+                        </Grid>
                     </Border>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
@@ -153,6 +238,12 @@
                            Foreground="#757575"
                            Visibility="{Binding ActiveSubscriptionInfo.IsFirstLoad, Converter={StaticResource BoolToVisibilityConverter}}"/>
 
+                <!-- 未订阅状态 -->
+                <TextBlock Text="月卡未订阅"
+                           FontSize="12"
+                           Foreground="#FF9800"
+                           Visibility="{Binding ActiveSubscriptionInfo.IsUnsubscribed, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
                 <!-- 订阅数据显示 -->
                 <StackPanel>
                     <StackPanel.Style>
@@ -164,6 +255,10 @@
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding ActiveSubscriptionInfo.HasError}" Value="True">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </DataTrigger>
+                                <!-- 未订阅时也隐藏数据 -->
+                                <DataTrigger Binding="{Binding ActiveSubscriptionInfo.IsUnsubscribed}" Value="True">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                 </DataTrigger>
                             </Style.Triggers>
@@ -279,6 +374,13 @@
                     FontSize="14"
                     Margin="5"
                     Style="{StaticResource ModernButtonStyle}"/>
+            <Button Content="添加配置"
+                    Command="{Binding ShowAddViewCommand}"
+                    Width="120"
+                    Height="38"
+                    FontSize="14"
+                    Margin="5"
+                    Style="{StaticResource ModernButtonStyle}"/>
         </StackPanel>
 
         <!-- 状态栏 -->
@@ -307,5 +409,90 @@
                          Foreground="#666666"/>
             </Grid>
         </Border>
+
+        <!-- 表单视图（添加/编辑配置） -->
+        <Grid x:Name="FormView"
+              Grid.RowSpan="5"
+              Background="White"
+              Visibility="{Binding IsFormViewVisible, Converter={StaticResource BoolToVisibilityConverter}}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel Margin="20" MaxWidth="500">
+                    <!-- 标题栏 -->
+                    <Grid Margin="0,0,0,20">
+                        <Button Content="← 返回"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               Command="{Binding BackToListCommand}"
+                               Style="{StaticResource ModernButtonStyle}"
+                               Width="80"
+                               Height="32"
+                               FontSize="13"/>
+                        <TextBlock Text="{Binding FormTitle}"
+                                  FontSize="20"
+                                  FontWeight="Bold"
+                                  HorizontalAlignment="Center"
+                                  VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- 配置名称 -->
+                    <TextBlock Text="配置名称 *"
+                              FontSize="14"
+                              FontWeight="SemiBold"
+                              Margin="0,10,0,5"/>
+                    <TextBox Text="{Binding FormProfileName, UpdateSourceTrigger=PropertyChanged}"
+                            Height="35"
+                            FontSize="14"
+                            Padding="8"/>
+
+                    <!-- Base URL -->
+                    <TextBlock Text="Base URL *"
+                              FontSize="14"
+                              FontWeight="SemiBold"
+                              Margin="0,15,0,5"/>
+                    <TextBox Text="{Binding FormBaseUrl, UpdateSourceTrigger=PropertyChanged}"
+                            Height="35"
+                            FontSize="14"
+                            Padding="8"/>
+                    <TextBlock Text="例如: https://api.example.com"
+                              FontSize="11"
+                              Foreground="#666"
+                              Margin="0,3,0,0"/>
+
+                    <!-- API Key -->
+                    <TextBlock Text="API Key *"
+                              FontSize="14"
+                              FontWeight="SemiBold"
+                              Margin="0,15,0,5"/>
+                    <TextBox Text="{Binding FormApiKey, UpdateSourceTrigger=PropertyChanged}"
+                            Height="35"
+                            FontSize="14"
+                            Padding="8"/>
+                    <TextBlock Text="例如: sk-xxx..."
+                              FontSize="11"
+                              Foreground="#666"
+                              Margin="0,3,0,0"/>
+
+                    <!-- 底部按钮 -->
+                    <StackPanel Orientation="Horizontal"
+                               HorizontalAlignment="Center"
+                               Margin="0,30,0,0">
+                        <Button Content="取消"
+                               Command="{Binding BackToListCommand}"
+                               Width="100"
+                               Height="38"
+                               FontSize="14"
+                               Margin="5"
+                               Style="{StaticResource ModernButtonStyle}"/>
+                        <Button Content="保存"
+                               Command="{Binding SaveProfileCommand}"
+                               Width="100"
+                               Height="38"
+                               FontSize="14"
+                               Margin="5"
+                               Style="{StaticResource ModernButtonStyle}"/>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
     </Grid>
 </Window>

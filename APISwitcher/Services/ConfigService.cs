@@ -82,6 +82,112 @@ public class ConfigService
         }
     }
 
+    /// <summary>
+    /// 保存配置列表到文件
+    /// </summary>
+    public async Task SaveProfilesAsync(List<Profile> profiles)
+    {
+        try
+        {
+            var json = JsonSerializer.Serialize(profiles, _jsonOptions);
+            await File.WriteAllTextAsync(_appProfilesPath, json);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"保存配置文件失败: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// 添加新配置
+    /// </summary>
+    public async Task AddProfileAsync(Profile newProfile)
+    {
+        try
+        {
+            var profiles = await LoadProfilesAsync();
+
+            // 检查名称是否重复
+            if (profiles.Any(p => p.Name.Equals(newProfile.Name, StringComparison.OrdinalIgnoreCase)))
+            {
+                throw new Exception($"配置名称 '{newProfile.Name}' 已存在");
+            }
+
+            profiles.Add(newProfile);
+            await SaveProfilesAsync(profiles);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"添加配置失败: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// 更新配置
+    /// </summary>
+    public async Task UpdateProfileAsync(string oldName, Profile updatedProfile)
+    {
+        try
+        {
+            var profiles = await LoadProfilesAsync();
+            var index = profiles.FindIndex(p => p.Name == oldName);
+
+            if (index < 0)
+            {
+                throw new Exception($"配置 '{oldName}' 不存在");
+            }
+
+            // 如果修改了名称，检查新名称是否已存在
+            if (oldName != updatedProfile.Name)
+            {
+                if (profiles.Any(p => p.Name.Equals(updatedProfile.Name, StringComparison.OrdinalIgnoreCase)))
+                {
+                    throw new Exception($"配置名称 '{updatedProfile.Name}' 已存在");
+                }
+            }
+
+            // 保留 IsActive 状态
+            updatedProfile.IsActive = profiles[index].IsActive;
+            profiles[index] = updatedProfile;
+
+            await SaveProfilesAsync(profiles);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"更新配置失败: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// 删除配置
+    /// </summary>
+    public async Task DeleteProfileAsync(string profileName)
+    {
+        try
+        {
+            var profiles = await LoadProfilesAsync();
+            var profileToDelete = profiles.FirstOrDefault(p => p.Name == profileName);
+
+            if (profileToDelete == null)
+            {
+                throw new Exception($"配置 '{profileName}' 不存在");
+            }
+
+            profiles.Remove(profileToDelete);
+
+            if (profiles.Count == 0)
+            {
+                throw new Exception("不能删除最后一个配置");
+            }
+
+            await SaveProfilesAsync(profiles);
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"删除配置失败: {ex.Message}", ex);
+        }
+    }
+
     public bool IsProfileActive(Profile profile, ClaudeSettings? currentSettings)
     {
         if (currentSettings?.ExtensionData == null || profile.Settings.ExtensionData == null || profile.Settings.ExtensionData.Count == 0)

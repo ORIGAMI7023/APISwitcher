@@ -28,6 +28,26 @@ public partial class MainViewModel : ObservableObject
     [ObservableProperty]
     private bool showSubscriptionPanel;
 
+    // 视图导航
+    [ObservableProperty]
+    private bool isFormViewVisible = false;
+
+    [ObservableProperty]
+    private Profile? editingProfile; // null = 添加模式，非null = 编辑模式
+
+    // 表单字段
+    [ObservableProperty]
+    private string formProfileName = string.Empty;
+
+    [ObservableProperty]
+    private string formBaseUrl = string.Empty;
+
+    [ObservableProperty]
+    private string formApiKey = string.Empty;
+
+    // 表单标题
+    public string FormTitle => EditingProfile == null ? "添加新配置" : "编辑配置";
+
     public MainViewModel(ConfigService configService, BalanceService balanceService, SubscriptionService subscriptionService)
     {
         _configService = configService;
@@ -266,6 +286,180 @@ public partial class MainViewModel : ObservableObject
                     ErrorMessage = ex.Message
                 };
             }
+        }
+    }
+
+    /// <summary>
+    /// 显示添加配置视图
+    /// </summary>
+    [RelayCommand]
+    private void ShowAddView()
+    {
+        EditingProfile = null;
+        FormProfileName = string.Empty;
+        FormBaseUrl = string.Empty;
+        FormApiKey = string.Empty;
+        IsFormViewVisible = true;
+    }
+
+    /// <summary>
+    /// 显示编辑配置视图
+    /// </summary>
+    [RelayCommand]
+    private void ShowEditView(Profile profile)
+    {
+        EditingProfile = profile;
+        FormProfileName = profile.Name;
+
+        // 从 Settings.ExtensionData 中提取 env 数据
+        if (profile.Settings.ExtensionData?.TryGetValue("env", out var envElement) == true
+            && envElement.ValueKind == System.Text.Json.JsonValueKind.Object)
+        {
+            if (envElement.TryGetProperty("ANTHROPIC_BASE_URL", out var baseUrlElement))
+            {
+                FormBaseUrl = baseUrlElement.GetString() ?? string.Empty;
+            }
+
+            if (envElement.TryGetProperty("ANTHROPIC_AUTH_TOKEN", out var tokenElement))
+            {
+                FormApiKey = tokenElement.GetString() ?? string.Empty;
+            }
+        }
+
+        IsFormViewVisible = true;
+        OnPropertyChanged(nameof(FormTitle));
+    }
+
+    /// <summary>
+    /// 返回列表视图
+    /// </summary>
+    [RelayCommand]
+    private void BackToList()
+    {
+        IsFormViewVisible = false;
+        EditingProfile = null;
+    }
+
+    /// <summary>
+    /// 保存配置（添加或更新）
+    /// </summary>
+    [RelayCommand]
+    private async Task SaveProfileAsync()
+    {
+        try
+        {
+            // 验证输入
+            if (string.IsNullOrWhiteSpace(FormProfileName))
+            {
+                MessageBox.Show("请输入配置名称", "验证失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(FormBaseUrl))
+            {
+                MessageBox.Show("请输入 Base URL", "验证失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(FormApiKey))
+            {
+                MessageBox.Show("请输入 API Key", "验证失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            // 验证 URL 格式
+            if (!Uri.TryCreate(FormBaseUrl, UriKind.Absolute, out _))
+            {
+                MessageBox.Show("Base URL 格式不正确", "验证失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            IsLoading = true;
+            StatusMessage = EditingProfile == null ? "正在添加配置..." : "正在更新配置...";
+
+            // 构建配置对象
+            var profile = new Profile
+            {
+                Name = FormProfileName.Trim(),
+                Settings = new ClaudeSettings
+                {
+                    ExtensionData = new Dictionary<string, System.Text.Json.JsonElement>
+                    {
+                        ["env"] = System.Text.Json.JsonSerializer.SerializeToElement(new Dictionary<string, string>
+                        {
+                            ["ANTHROPIC_AUTH_TOKEN"] = FormApiKey.Trim(),
+                            ["ANTHROPIC_BASE_URL"] = FormBaseUrl.Trim(),
+                            ["API_TIMEOUT_MS"] = "3000000",
+                            ["CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"] = "1"
+                        }),
+                        ["alwaysThinkingEnabled"] = System.Text.Json.JsonSerializer.SerializeToElement(false)
+                    }
+                }
+            };
+
+            if (EditingProfile == null)
+            {
+                // 添加模式
+                await _configService.AddProfileAsync(profile);
+                StatusMessage = "配置添加成功";
+            }
+            else
+            {
+                // 编辑模式
+                await _configService.UpdateProfileAsync(EditingProfile.Name, profile);
+                StatusMessage = "配置更新成功";
+            }
+
+            // 返回列表并刷新
+            IsFormViewVisible = false;
+            await LoadProfilesAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"保存失败: {ex.Message}";
+            MessageBox.Show($"保存配置失败:\n{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    /// <summary>
+    /// 删除配置
+    /// </summary>
+    [RelayCommand]
+    private async Task DeleteProfileAsync(Profile profile)
+    {
+        try
+        {
+            var result = MessageBox.Show(
+                $"确定要删除配置 \"{profile.Name}\" 吗？\n此操作不可撤销。",
+                "确认删除",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (result != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            IsLoading = true;
+            StatusMessage = $"正在删除配置 {profile.Name}...";
+
+            await _configService.DeleteProfileAsync(profile.Name);
+
+            StatusMessage = $"配置 {profile.Name} 已删除";
+            await LoadProfilesAsync();
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"删除失败: {ex.Message}";
+            MessageBox.Show($"删除配置失败:\n{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
 }

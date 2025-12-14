@@ -80,28 +80,40 @@ public class SubscriptionService : IDisposable
             }
 
             // 提取数据：data.items[0]
-            var item = jsonNode["data"]?["items"]?[0];
-            if (item == null)
+            var items = jsonNode["data"]?["items"];
+            if (items == null || items.AsArray().Count == 0)
             {
-                throw new Exception("未找到订阅数据");
+                // API调用成功，但没有订阅数据，表示用户未订阅
+                subscriptionInfo.IsUnsubscribed = true;
+                subscriptionInfo.HasError = false;
+                subscriptionInfo.IsFirstLoad = false;
+                subscriptionInfo.IsLoading = false;
+                return subscriptionInfo;
             }
 
-            var subscriptionInfoNode = item["subscription_info"];
+            var item = items[0];
+            var subscriptionInfoNode = item?["subscription_info"];
             if (subscriptionInfoNode == null)
             {
-                throw new Exception("未找到订阅详情");
+                // 有订阅记录，但没有详细信息，也认为是未订阅
+                subscriptionInfo.IsUnsubscribed = true;
+                subscriptionInfo.HasError = false;
+                subscriptionInfo.IsFirstLoad = false;
+                subscriptionInfo.IsLoading = false;
+                return subscriptionInfo;
             }
 
             // 提取各个字段
             subscriptionInfo.DailyQuotaLimit = subscriptionInfoNode["daily_quota_limit"]?.GetValue<long>() ?? 0;
-            subscriptionInfo.DailyQuotaUsed = item["daily_quota_used"]?.GetValue<long>() ?? 0;
+            subscriptionInfo.DailyQuotaUsed = item?["daily_quota_used"]?.GetValue<long>() ?? 0;
             subscriptionInfo.WeeklyQuotaLimit = subscriptionInfoNode["weekly_quota_limit"]?.GetValue<long>() ?? 0;
-            subscriptionInfo.WeeklyQuotaUsed = item["weekly_quota_used"]?.GetValue<long>() ?? 0;
+            subscriptionInfo.WeeklyQuotaUsed = item?["weekly_quota_used"]?.GetValue<long>() ?? 0;
             subscriptionInfo.TotalQuotaLimit = subscriptionInfoNode["total_quota_limit"]?.GetValue<long>() ?? 0;
-            subscriptionInfo.TotalQuotaUsed = item["total_quota_used"]?.GetValue<long>() ?? 0;
-            subscriptionInfo.ExpireTime = item["expire_time"]?.GetValue<long>() ?? 0;
+            subscriptionInfo.TotalQuotaUsed = item?["total_quota_used"]?.GetValue<long>() ?? 0;
+            subscriptionInfo.ExpireTime = item?["expire_time"]?.GetValue<long>() ?? 0;
 
             subscriptionInfo.HasError = false;
+            subscriptionInfo.IsUnsubscribed = false;
             subscriptionInfo.IsFirstLoad = false;
         }
         catch (OperationCanceledException)

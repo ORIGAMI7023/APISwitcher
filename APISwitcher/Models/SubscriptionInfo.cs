@@ -45,6 +45,12 @@ public partial class SubscriptionInfo : ObservableObject
     private string? errorMessage;
 
     /// <summary>
+    /// 是否未订阅（API调用成功但没有订阅数据）
+    /// </summary>
+    [ObservableProperty]
+    private bool isUnsubscribed;
+
+    /// <summary>
     /// 是否首次加载（用于控制UI显示，首次加载时隐藏内容显示加载提示，刷新时保留旧内容）
     /// </summary>
     [ObservableProperty]
