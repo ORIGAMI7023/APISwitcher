@@ -106,13 +106,16 @@ class ConfigService {
             let profileBaseUrl = profileEnv["ANTHROPIC_BASE_URL"] as? String ?? ""
             let profileAuthToken = profileEnv["ANTHROPIC_AUTH_TOKEN"] as? String ?? ""
 
-            // 只有两个关键字段都匹配才认为是激活的配置
-            updated.isActive = !profileBaseUrl.isEmpty &&
-                               !profileAuthToken.isEmpty &&
-                               profileBaseUrl == currentBaseUrl &&
-                               profileAuthToken == currentAuthToken
+            // 判断是否匹配
+            if profileBaseUrl.isEmpty && profileAuthToken.isEmpty {
+                // 配置没有 env（官方配置），匹配当前也没有自定义 env 的情况
+                updated.isActive = currentBaseUrl.isEmpty && currentAuthToken.isEmpty
+            } else {
+                // 配置有 env，需要完全匹配
+                updated.isActive = profileBaseUrl == currentBaseUrl && profileAuthToken == currentAuthToken
+            }
 
-            print("   配置[\(profile.name)]: baseUrl=\(profileBaseUrl.prefix(30))... token=\(profileAuthToken.prefix(20))... -> isActive=\(updated.isActive)")
+            print("   配置[\(profile.name)]: isActive=\(updated.isActive)")
 
             return updated
         }
