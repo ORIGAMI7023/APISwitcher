@@ -462,4 +462,40 @@ public partial class MainViewModel : ObservableObject
             IsLoading = false;
         }
     }
+
+    /// <summary>
+    /// 打开配置文件
+    /// </summary>
+    [RelayCommand]
+    private void OpenConfigFile()
+    {
+        try
+        {
+            _configService.OpenFileWithDefaultEditor(_configService.AppProfilesPath);
+            StatusMessage = "已打开配置文件";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"打开文件失败: {ex.Message}";
+            MessageBox.Show($"打开配置文件失败:\n{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
+
+    /// <summary>
+    /// 打开 Claude 设置文件
+    /// </summary>
+    [RelayCommand]
+    private void OpenClaudeSettingsFile()
+    {
+        try
+        {
+            _configService.OpenFileWithDefaultEditor(_configService.ClaudeSettingsPath);
+            StatusMessage = "已打开 Claude 设置文件";
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"打开文件失败: {ex.Message}";
+            MessageBox.Show($"打开 Claude 设置文件失败:\n{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    }
 }

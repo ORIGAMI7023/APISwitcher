@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Diagnostics;
 using APISwitcher.Models;
 
 namespace APISwitcher.Services;
@@ -26,6 +27,38 @@ public class ConfigService
         };
     }
 
+    public string AppProfilesPath => _appProfilesPath;
+    public string ClaudeSettingsPath => _claudeSettingsPath;
+
+    /// <summary>
+    /// 使用默认编辑器打开配置文件
+    /// </summary>
+    /// <param name="path">文件路径</param>
+    public void OpenFileWithDefaultEditor(string path)
+    {
+        try
+        {
+            if (!File.Exists(path))
+            {
+                throw new FileNotFoundException($"配置文件不存在: {path}");
+            }
+
+            // 使用 Process.Start 打开文件，系统会自动使用默认编辑器
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = path,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"打开文件失败: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// 加载配置列表
+    /// </summary>
     public async Task<List<Profile>> LoadProfilesAsync()
     {
         try

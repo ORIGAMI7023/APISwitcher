@@ -3,7 +3,6 @@
 //  APISwitcher
 //
 //  主窗口 ViewModel
-//
 
 import Foundation
 import SwiftUI
@@ -21,8 +20,6 @@ class MainViewModel {
     var refreshUI: (() -> Void)?
 
     private let configService = ConfigService()
-    private let balanceService = BalanceService()
-    private let subscriptionService = SubscriptionService()
 
     /// 初始化
     func initialize() async {
@@ -78,57 +75,6 @@ class MainViewModel {
         isLoading = false
     }
 
-    /// 查询余额
-    func queryBalance(for profile: Profile) async {
-        guard let index = profiles.firstIndex(where: { $0.id == profile.id }) else { return }
-
-        statusMessage = "正在查询 \(profile.name) 的余额..."
-
-        do {
-            let balance = try await balanceService.queryBalance(config: profile)
-            profiles[index].balanceInfo = balance
-            statusMessage = "余额查询成功"
-        } catch {
-            statusMessage = "余额查询失败: \(error.localizedDescription)"
-        }
-    }
-
-    /// 查询订阅信息
-    func querySubscription(for profile: Profile) async {
-        guard let index = profiles.firstIndex(where: { $0.id == profile.id }) else { return }
-
-        statusMessage = "正在查询 \(profile.name) 的订阅信息..."
-
-        do {
-            let subscription = try await subscriptionService.querySubscription(config: profile)
-            profiles[index].subscriptionInfo = subscription
-            statusMessage = "订阅信息查询成功"
-        } catch {
-            statusMessage = "订阅信息查询失败: \(error.localizedDescription)"
-        }
-    }
-
-    /// 批量查询所有配置的余额
-    func refreshAllBalances() async {
-        statusMessage = "正在刷新所有余额..."
-
-        let profilesToQuery = profiles.filter { $0.balanceApi != nil }
-
-        for profile in profilesToQuery {
-            guard let index = profiles.firstIndex(where: { $0.id == profile.id }) else { continue }
-
-            do {
-                let balance = try await balanceService.queryBalance(config: profile)
-                profiles[index].balanceInfo = balance
-            } catch {
-                // 忽略单个查询的错误，继续查询其他配置
-                continue
-            }
-        }
-
-        statusMessage = "余额刷新完成"
-    }
-
     /// 显示添加表单
     func showAddForm() {
         formViewModel = ProfileFormViewModel(delegate: self)
@@ -155,6 +101,26 @@ class MainViewModel {
     /// 刷新
     func refresh() async {
         await loadProfiles()
+    }
+
+    /// 打开配置文件
+    func openConfigFile() {
+        do {
+            try configService.openFileWithDefaultEditor(configService.appProfilesPath)
+            statusMessage = "已打开配置文件"
+        } catch {
+            statusMessage = "打开文件失败: \(error.localizedDescription)"
+        }
+    }
+
+    /// 打开 Claude 设置文件
+    func openClaudeSettingsFile() {
+        do {
+            try configService.openFileWithDefaultEditor(configService.settingsPath)
+            statusMessage = "已打开 Claude 设置文件"
+        } catch {
+            statusMessage = "打开文件失败: \(error.localizedDescription)"
+        }
     }
 }
 

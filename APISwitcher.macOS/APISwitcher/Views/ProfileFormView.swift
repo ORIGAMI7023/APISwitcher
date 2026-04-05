@@ -30,68 +30,36 @@ struct ProfileFormView: View {
                     // 基本信息
                     GroupBox("基本信息") {
                         VStack(alignment: .leading, spacing: 12) {
-                            FormField("配置名称", text: $viewModel.name)
+                            FormField("配置名称 *", text: $viewModel.name)
+                                .help("显示的配置名称")
                         }
                     }
 
-                    // Claude 设置
-                    GroupBox("Claude 设置") {
+                    // 必填设置
+                    GroupBox("必填设置") {
                         VStack(alignment: .leading, spacing: 12) {
-                            FormField("API Key", text: $viewModel.claudeApiKey)
-                                .help("Claude API 密钥")
+                            FormField("API Key *", text: $viewModel.authToken)
+                                .help("ANTHROPIC_AUTH_TOKEN")
 
-                            HStack {
-                                Text("模型:")
-                                    .frame(width: 100, alignment: .trailing)
-
-                                Picker("", selection: $viewModel.claudeModel) {
-                                    ForEach(viewModel.commonModels, id: \.self) { model in
-                                        Text(model).tag(model)
-                                    }
-                                }
-                                .labelsHidden()
-                            }
-
-                            FormField("Base URL (可选)", text: $viewModel.claudeBaseURL)
-                                .help("自定义 API 端点")
+                            FormField("Base URL *", text: $viewModel.baseUrl)
+                                .help("ANTHROPIC_BASE_URL，例如: https://api.anthropic.com")
                         }
                     }
 
-                    // 余额查询设置
-                    GroupBox("余额查询 (可选)") {
+                    // 可选模型设置
+                    GroupBox("可选模型设置") {
                         VStack(alignment: .leading, spacing: 12) {
-                            FormField("余额 API", text: $viewModel.balanceApi)
+                            FormField("默认模型", text: $viewModel.defaultModel)
+                                .help("ANTHROPIC_MODEL，留空则不写入配置")
 
-                            HStack {
-                                Text("认证方式:")
-                                    .frame(width: 100, alignment: .trailing)
+                            FormField("默认 Haiku 模型", text: $viewModel.defaultHaikuModel)
+                                .help("ANTHROPIC_DEFAULT_HAIKU_MODEL，留空则不写入配置")
 
-                                Picker("", selection: $viewModel.authMode) {
-                                    ForEach(viewModel.authModes, id: \.self) { mode in
-                                        Text(mode.capitalized).tag(mode)
-                                    }
-                                }
-                                .labelsHidden()
-                            }
+                            FormField("默认 Sonnet 模型", text: $viewModel.defaultSonnetModel)
+                                .help("ANTHROPIC_DEFAULT_SONNET_MODEL，留空则不写入配置")
 
-                            FormField("认证键名", text: $viewModel.authKey)
-                                .help("如 Authorization、X-API-Key、session 等")
-
-                            FormField("API Key", text: $viewModel.apiKey)
-                                .help("用于余额查询的认证密钥")
-
-                            FormField("余额 JSON 路径", text: $viewModel.balanceJsonPath)
-                                .help("如 $.data.balance 或 $.balance")
-                        }
-                    }
-
-                    // 订阅查询设置
-                    GroupBox("订阅查询 (可选)") {
-                        VStack(alignment: .leading, spacing: 12) {
-                            FormField("订阅 API", text: $viewModel.subscriptionApi)
-
-                            FormField("订阅 JSON 路径", text: $viewModel.subscriptionJsonPath)
-                                .help("如 $.data 或留空使用整个响应")
+                            FormField("默认 Opus 模型", text: $viewModel.defaultOpusModel)
+                                .help("ANTHROPIC_DEFAULT_OPUS_MODEL，留空则不写入配置")
                         }
                     }
 
@@ -133,7 +101,7 @@ struct ProfileFormView: View {
             }
             .padding()
         }
-        .frame(width: 600, height: 700)
+        .frame(width: 550, height: 500)
     }
 }
 
@@ -150,7 +118,7 @@ struct FormField: View {
     var body: some View {
         HStack(alignment: .top) {
             Text("\(label):")
-                .frame(width: 100, alignment: .trailing)
+                .frame(width: 120, alignment: .trailing)
                 .padding(.top, 4)
 
             TextField("", text: $text)

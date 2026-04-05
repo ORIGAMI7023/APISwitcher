@@ -39,14 +39,6 @@ struct MainView: View {
             }
             .frame(height: 250)
 
-            // 订阅信息面板
-            if let activeProfile = viewModel.profiles.first(where: { $0.isActive }),
-               let subscription = activeProfile.subscriptionInfo {
-                SubscriptionPanelView(subscription: subscription)
-                    .padding(.top, 10)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-            }
-
             // 操作按钮
             HStack(spacing: 10) {
                 Button("刷新配置") {
@@ -62,6 +54,13 @@ struct MainView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .frame(width: 120, height: 38)
+
+                Button("打开配置") {
+                    viewModel.openConfigFile()
+                }
+                .buttonStyle(.borderedProminent)
+                .frame(width: 120, height: 38)
+                .help("使用默认编辑器打开 app_profiles.json")
             }
             .padding(.top, 20)
 
@@ -98,7 +97,7 @@ struct MainView: View {
                 refreshTrigger.toggle()
             }
         }
-        .frame(width: 780, height: 460)
+        .frame(width: 780, height: 400)
     }
 }
 

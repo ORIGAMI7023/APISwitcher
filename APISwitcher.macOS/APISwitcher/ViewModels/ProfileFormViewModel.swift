@@ -19,31 +19,21 @@ protocol ProfileFormDelegate: AnyObject {
 class ProfileFormViewModel {
     // 基本信息
     var name: String
-    var balanceApi: String
-    var authMode: String
-    var authKey: String
-    var apiKey: String
-    var balanceJsonPath: String
-    var subscriptionApi: String
-    var subscriptionJsonPath: String
 
-    // Claude 设置
-    var claudeApiKey: String
-    var claudeModel: String
-    var claudeBaseURL: String
+    // 必填设置
+    var authToken: String
+    var baseUrl: String
+
+    // 可选模型设置
+    var defaultModel: String
+    var defaultHaikuModel: String
+    var defaultSonnetModel: String
+    var defaultOpusModel: String
 
     var errorMessage: String?
 
     private let originalProfile: Profile?
     private weak var delegate: ProfileFormDelegate?
-
-    let authModes = ["header", "body", "cookie"]
-    let commonModels = [
-        "claude-sonnet-4.5",
-        "claude-opus-4.5",
-        "claude-haiku-4.0",
-        "claude-3-5-sonnet-20241022"
-    ]
 
     var isNew: Bool {
         originalProfile == nil
@@ -57,20 +47,17 @@ class ProfileFormViewModel {
         self.originalProfile = profile
         self.delegate = delegate
 
-        // 简化的初始化 - 只初始化基本字段
+        // 初始化字段
         self.name = profile?.name ?? ""
-        self.balanceApi = ""
-        self.authMode = "header"
-        self.authKey = "Authorization"
-        self.apiKey = ""
-        self.balanceJsonPath = "$.balance"
-        self.subscriptionApi = ""
-        self.subscriptionJsonPath = "$.data"
 
-        // Claude 设置
-        self.claudeApiKey = profile?.settings.claude?.apiKey ?? ""
-        self.claudeModel = profile?.settings.claude?.model ?? "claude-sonnet-4.5"
-        self.claudeBaseURL = profile?.settings.claude?.baseURL ?? ""
+        // 从 settings.env 中提取值
+        let env = profile?.settings.env ?? [:]
+        self.authToken = env["ANTHROPIC_AUTH_TOKEN"] ?? ""
+        self.baseUrl = env["ANTHROPIC_BASE_URL"] ?? ""
+        self.defaultModel = env["ANTHROPIC_MODEL"] ?? ""
+        self.defaultHaikuModel = env["ANTHROPIC_DEFAULT_HAIKU_MODEL"] ?? ""
+        self.defaultSonnetModel = env["ANTHROPIC_DEFAULT_SONNET_MODEL"] ?? ""
+        self.defaultOpusModel = env["ANTHROPIC_DEFAULT_OPUS_MODEL"] ?? ""
     }
 
     /// 验证表单
@@ -82,8 +69,13 @@ class ProfileFormViewModel {
             return false
         }
 
-        if claudeApiKey.trimmingCharacters(in: .whitespaces).isEmpty {
-            errorMessage = "请输入 Claude API Key"
+        if authToken.trimmingCharacters(in: .whitespaces).isEmpty {
+            errorMessage = "请输入 API Key"
+            return false
+        }
+
+        if baseUrl.trimmingCharacters(in: .whitespaces).isEmpty {
+            errorMessage = "请输入 Base URL"
             return false
         }
 
@@ -94,27 +86,51 @@ class ProfileFormViewModel {
     func save() {
         guard validate() else { return }
 
-        // TODO: 需要重构以支持新的 Profile 结构
-        errorMessage = "表单功能暂未适配新的配置格式"
-        /*
-        let claudeConfig = ClaudeSettings.ClaudeConfig(
-            apiKey: claudeApiKey,
-            model: claudeModel,
-            baseURL: claudeBaseURL.isEmpty ? nil : claudeBaseURL
-        )
+        // 构建 env 字典（只包含非空值）
+        var env: [String: String] = [:]
 
+        // 必填项
+        env["ANTHROPIC_AUTH_TOKEN"] = authToken.trimmingCharacters(in: .whitespaces)
+        env["ANTHROPIC_BASE_URL"] = baseUrl.trimmingCharacters(in: .whitespaces)
+
+        // 可选项（只有非空才添加）
+        let trimmedDefaultModel = defaultModel.trimmingCharacters(in: .whitespaces)
+        if !trimmedDefaultModel.isEmpty {
+            env["ANTHROPIC_MODEL"] = trimmedDefaultModel
+        }
+
+        let trimmedHaikuModel = defaultHaikuModel.trimmingCharacters(in: .whitespaces)
+        if !trimmedHaikuModel.isEmpty {
+            env["ANTHROPIC_DEFAULT_HAIKU_MODEL"] = trimmedHaikuModel
+        }
+
+        let trimmedSonnetModel = defaultSonnetModel.trimmingCharacters(in: .whitespaces)
+        if !trimmedSonnetModel.isEmpty {
+            env["ANTHROPIC_DEFAULT_SONNET_MODEL"] = trimmedSonnetModel
+        }
+
+        let trimmedOpusModel = defaultOpusModel.trimmingCharacters(in: .whitespaces)
+        if !trimmedOpusModel.isEmpty {
+            env["ANTHROPIC_DEFAULT_OPUS_MODEL"] = trimmedOpusModel
+        }
+
+        // 固定值
+        env["API_TIMEOUT_MS"] = "3000000"
+        env["CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"] = "1"
+
+        // 创建 settings
         let settings = ClaudeSettings(
-            claude: claudeConfig,
-            mcpServers: originalProfile?.settings.mcpServers
+            alwaysThinkingEnabled: false,
+            env: env
         )
 
+        // 创建 profile
         let profile = Profile(
-            name: name,
+            name: name.trimmingCharacters(in: .whitespaces),
             settings: settings
         )
 
         delegate?.didSaveProfile(profile, isNew: isNew)
-        */
     }
 
     /// 取消

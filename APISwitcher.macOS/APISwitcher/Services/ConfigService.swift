@@ -6,12 +6,17 @@
 //
 
 import Foundation
+import AppKit
 
 class ConfigService {
     private let profilesPath: URL
     private let claudeSettingsPath: URL
     private let decoder: JSONDecoder
     private let encoder: JSONEncoder
+
+    // 暴露路径供外部使用
+    var appProfilesPath: URL { profilesPath }
+    var settingsPath: URL { claudeSettingsPath }
 
     init() {
         self.profilesPath = PathHelper.getProfilesPath()
@@ -20,6 +25,16 @@ class ConfigService {
         self.decoder = JSONDecoder()
         self.encoder = JSONEncoder()
         self.encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+    }
+
+    /// 使用默认编辑器打开文件
+    func openFileWithDefaultEditor(_ fileURL: URL) throws {
+        // 使用 NSWorkspace 打开文件，系统会自动使用默认编辑器
+        guard FileManager.default.fileExists(atPath: fileURL.path) else {
+            throw ConfigError.fileNotFound(fileURL.path)
+        }
+
+        NSWorkspace.shared.open(fileURL)
     }
 
     /// 加载所有配置
@@ -132,6 +147,7 @@ class ConfigService {
 enum ConfigError: LocalizedError {
     case claudeSettingsNotFound
     case profileNotFound
+    case fileNotFound(String)
 
     var errorDescription: String? {
         switch self {
@@ -139,6 +155,8 @@ enum ConfigError: LocalizedError {
             return "未找到 Claude 设置文件 (~/.claude/settings.json)"
         case .profileNotFound:
             return "配置不存在"
+        case .fileNotFound(let path):
+            return "文件不存在: \(path)"
         }
     }
 }

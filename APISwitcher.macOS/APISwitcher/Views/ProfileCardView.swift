@@ -31,16 +31,6 @@ struct ProfileCardView: View {
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(.green)
                 }
-
-                // 余额信息
-                if profile.shouldShowBalance {
-                    if let balance = profile.balanceInfo {
-                        Text(balance.formattedBalance)
-                            .font(.system(size: 12))
-                            .foregroundStyle(balance.isUnlimited ? Color(hex: "#388E3C") : Color(hex: "#1976D2"))
-                            .multilineTextAlignment(.center)
-                    }
-                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .padding(10)
@@ -121,13 +111,6 @@ struct ProfileCardView: View {
                 NSCursor.pop()
             }
         }
-    }
-}
-
-// 扩展：判断可选字符串是否为空
-extension Optional where Wrapped == String {
-    var isNilOrEmpty: Bool {
-        return self?.isEmpty ?? true
     }
 }
 

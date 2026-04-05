@@ -64,11 +64,6 @@ class StatusBarController: ObservableObject {
                 item.representedObject = profile.id
                 item.state = profile.isActive ? .on : .off
 
-                // 如果有余额信息，显示在 tooltip
-                if let balance = profile.balanceInfo {
-                    item.toolTip = "余额: \(balance.formattedBalance)"
-                }
-
                 menu.addItem(item)
             }
         }
