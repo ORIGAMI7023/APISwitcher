@@ -56,10 +56,17 @@ struct MainView: View {
                 .frame(width: 120, height: 38)
 
                 Button("打开配置") {
-                    viewModel.openConfigFile()
+                    viewModel.openClaudeSettingsFile()
                 }
                 .buttonStyle(.borderedProminent)
                 .frame(width: 120, height: 38)
+                .help("使用默认编辑器打开 settings.json")
+
+                Button("打开所有配置") {
+                    viewModel.openConfigFile()
+                }
+                .buttonStyle(.borderedProminent)
+                .frame(width: 140, height: 38)
                 .help("使用默认编辑器打开 app_profiles.json")
             }
             .padding(.top, 20)

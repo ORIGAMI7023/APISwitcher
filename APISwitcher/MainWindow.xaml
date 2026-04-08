@@ -382,8 +382,16 @@
                     Margin="5"
                     Style="{StaticResource ModernButtonStyle}"/>
             <Button Content="打开配置"
-                    Command="{Binding OpenConfigFileCommand}"
+                    Command="{Binding OpenClaudeSettingsFileCommand}"
                     Width="120"
+                    Height="38"
+                    FontSize="14"
+                    Margin="5"
+                    Style="{StaticResource ModernButtonStyle}"
+                    ToolTip="使用默认编辑器打开 settings.json"/>
+            <Button Content="打开所有配置"
+                    Command="{Binding OpenConfigFileCommand}"
+                    Width="140"
                     Height="38"
                     FontSize="14"
                     Margin="5"
