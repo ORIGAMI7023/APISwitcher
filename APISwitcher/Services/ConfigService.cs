@@ -96,6 +96,83 @@ public class ConfigService
         }
     }
 
+    /// <summary>
+    /// 判断配置是否为官方配置（没有自定义 env）
+    /// </summary>
+    public bool IsOfficialProfile(Profile profile)
+    {
+        if (profile.Settings.ExtensionData == null)
+        {
+            return true;
+        }
+
+        // 检查 settings.env 格式（新格式）
+        if (profile.Settings.ExtensionData.TryGetValue("env", out var envElement) &&
+            envElement.ValueKind == JsonValueKind.Object)
+        {
+            var hasBaseUrl = envElement.TryGetProperty("ANTHROPIC_BASE_URL", out var baseUrl) &&
+                             !string.IsNullOrEmpty(baseUrl.GetString());
+            var hasAuthToken = envElement.TryGetProperty("ANTHROPIC_AUTH_TOKEN", out var authToken) &&
+                               !string.IsNullOrEmpty(authToken.GetString());
+            if (hasBaseUrl || hasAuthToken)
+            {
+                return false;
+            }
+        }
+
+        // 检查 settings 顶层属性格式（旧格式）
+        var hasTopLevelBaseUrl = profile.Settings.ExtensionData.TryGetValue("ANTHROPIC_BASE_URL", out var topLevelBaseUrl) &&
+                                 topLevelBaseUrl.ValueKind == JsonValueKind.String &&
+                                 !string.IsNullOrEmpty(topLevelBaseUrl.GetString());
+        var hasTopLevelAuthToken = profile.Settings.ExtensionData.TryGetValue("ANTHROPIC_AUTH_TOKEN", out var topLevelAuthToken) &&
+                                   topLevelAuthToken.ValueKind == JsonValueKind.String &&
+                                   !string.IsNullOrEmpty(topLevelAuthToken.GetString());
+
+        return !hasTopLevelBaseUrl && !hasTopLevelAuthToken;
+    }
+
+    /// <summary>
+    /// 为非官方配置注入 CLAUDE_CODE_ATTRIBUTION_HEADER 环境变量
+    /// </summary>
+    public ClaudeSettings InjectAttributionHeader(ClaudeSettings settings)
+    {
+        if (settings.ExtensionData == null)
+        {
+            return settings;
+        }
+
+        // 深拷贝 settings 以避免修改原始对象
+        var json = JsonSerializer.Serialize(settings, _jsonOptions);
+        var dict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(json, _jsonOptions);
+        if (dict == null)
+        {
+            return settings;
+        }
+
+        // 新格式：env 对象存在
+        if (dict.TryGetValue("env", out var envElement) && envElement.ValueKind == JsonValueKind.Object)
+        {
+            var envDict = JsonSerializer.Deserialize<Dictionary<string, string>>(envElement.GetRawText(), _jsonOptions);
+            if (envDict != null)
+            {
+                envDict["CLAUDE_CODE_ATTRIBUTION_HEADER"] = "0";
+                dict["env"] = JsonSerializer.SerializeToElement(envDict, _jsonOptions);
+            }
+        }
+        // 旧格式：ANTHROPIC_BASE_URL 直接作为顶层属性
+        else if (dict.ContainsKey("ANTHROPIC_BASE_URL"))
+        {
+            dict["CLAUDE_CODE_ATTRIBUTION_HEADER"] = JsonSerializer.SerializeToElement("0");
+        }
+        else
+        {
+            return settings;
+        }
+
+        var newJson = JsonSerializer.Serialize(dict, _jsonOptions);
+        return JsonSerializer.Deserialize<ClaudeSettings>(newJson, _jsonOptions) ?? settings;
+    }
+
     public async Task SaveClaudeSettingsAsync(ClaudeSettings settings)
     {
         try

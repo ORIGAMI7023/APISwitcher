@@ -27,6 +27,11 @@
     "subscriptionApi": "https://custom-api.example.com/subscription",
     "subscriptionJsonPath": "$.data",
     "settings": {
+      "env": {
+        "ANTHROPIC_AUTH_TOKEN": "Bearer YOUR_API_KEY",
+        "ANTHROPIC_BASE_URL": "https://custom-api.example.com/v1",
+        "CLAUDE_CODE_ATTRIBUTION_HEADER": "0"
+      },
       "claude": {
         "apiKey": "sk-custom-xxx",
         "model": "claude-sonnet-4.5",

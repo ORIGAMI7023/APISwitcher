@@ -16,7 +16,8 @@
       "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-4.6",
       "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-air",
       "API_TIMEOUT_MS": "3000000",
-      "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+      "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+      "CLAUDE_CODE_ATTRIBUTION_HEADER": "0"
     }
   },
   {
@@ -27,7 +28,8 @@
         "ANTHROPIC_AUTH_TOKEN": "sk-Hgsf7......",
         "ANTHROPIC_BASE_URL": "https://...",
         "API_TIMEOUT_MS": "3000000",
-        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+        "CLAUDE_CODE_ATTRIBUTION_HEADER": "0"
       },
       "alwaysThinkingEnabled": false
     },

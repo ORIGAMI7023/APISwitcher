@@ -118,7 +118,11 @@ public partial class MainViewModel : ObservableObject
             IsLoading = true;
             StatusMessage = $"正在切换到 {profile.Name}...";
 
-            await _configService.SaveClaudeSettingsAsync(profile.Settings);
+            var settingsToSave = _configService.IsOfficialProfile(profile)
+                ? profile.Settings
+                : _configService.InjectAttributionHeader(profile.Settings);
+
+            await _configService.SaveClaudeSettingsAsync(settingsToSave);
 
             foreach (var p in Profiles)
             {

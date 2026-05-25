@@ -65,10 +65,27 @@ class ConfigService {
         return try decoder.decode(ClaudeSettings.self, from: data)
     }
 
+    /// 判断配置是否为官方配置（没有自定义 env）
+    private func isOfficialProfile(_ profile: Profile) -> Bool {
+        let env = profile.settings.env ?? [:]
+        let baseUrl = env["ANTHROPIC_BASE_URL"] ?? ""
+        let authToken = env["ANTHROPIC_AUTH_TOKEN"] ?? ""
+        return baseUrl.isEmpty && authToken.isEmpty
+    }
+
     /// 切换配置（写入 Claude 设置文件）
     func switchProfile(_ profile: Profile) throws {
         try PathHelper.ensureDirectoryExists(for: claudeSettingsPath)
-        let data = try encoder.encode(profile.settings)
+
+        var settings = profile.settings
+        if !isOfficialProfile(profile) {
+            if settings.env == nil {
+                settings.env = [:]
+            }
+            settings.env?["CLAUDE_CODE_ATTRIBUTION_HEADER"] = "0"
+        }
+
+        let data = try encoder.encode(settings)
         try data.write(to: claudeSettingsPath, options: .atomic)
 
         // 调试：打印写入的内容
