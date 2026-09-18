@@ -154,6 +154,10 @@ public class SubscriptionService : IDisposable
                 }
             }
         }
+        if (settings.ExtensionData?.TryGetValue("ANTHROPIC_AUTH_TOKEN", out var topToken) == true && topToken.ValueKind == JsonValueKind.String)
+        {
+            return topToken.GetString();
+        }
         return null;
     }
 
@@ -171,6 +175,10 @@ public class SubscriptionService : IDisposable
                     return baseUrlElement.GetString();
                 }
             }
+        }
+        if (settings.ExtensionData?.TryGetValue("ANTHROPIC_BASE_URL", out var topBaseUrl) == true && topBaseUrl.ValueKind == JsonValueKind.String)
+        {
+            return topBaseUrl.GetString();
         }
         return null;
     }

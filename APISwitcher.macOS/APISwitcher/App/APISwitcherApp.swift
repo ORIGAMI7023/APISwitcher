@@ -51,8 +51,7 @@ struct MenuBarContentView: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
             } else {
-                ForEach(viewModel.profiles.indices, id: \.self) { index in
-                    let profile = viewModel.profiles[index]
+                ForEach(viewModel.profiles) { profile in
                     Button {
                         Task {
                             await viewModel.switchProfile(profile)

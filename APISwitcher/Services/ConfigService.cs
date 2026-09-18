@@ -40,7 +40,32 @@ public class ConfigService
         {
             if (!File.Exists(path))
             {
-                throw new FileNotFoundException($"配置文件不存在: {path}");
+                var directory = Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                if (Path.GetFileName(path).Equals("settings.json", StringComparison.OrdinalIgnoreCase))
+                {
+                    File.WriteAllText(path, "{}\n");
+                }
+                else if (Path.GetFileName(path).Equals("app_profiles.json", StringComparison.OrdinalIgnoreCase))
+                {
+                    var examplePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app_profiles.json.example");
+                    if (File.Exists(examplePath))
+                    {
+                        File.Copy(examplePath, path, true);
+                    }
+                    else
+                    {
+                        File.WriteAllText(path, "[]\n");
+                    }
+                }
+                else
+                {
+                    throw new FileNotFoundException($"配置文件不存在: {path}");
+                }
             }
 
             // 使用 Process.Start 打开文件，系统会自动使用默认编辑器
@@ -65,7 +90,15 @@ public class ConfigService
         {
             if (!File.Exists(_appProfilesPath))
             {
-                return new List<Profile>();
+                var examplePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "app_profiles.json.example");
+                if (File.Exists(examplePath))
+                {
+                    File.Copy(examplePath, _appProfilesPath, true);
+                }
+                else
+                {
+                    return new List<Profile>();
+                }
             }
 
             var json = await File.ReadAllTextAsync(_appProfilesPath);
@@ -159,8 +192,8 @@ public class ConfigService
                 dict["env"] = JsonSerializer.SerializeToElement(envDict, _jsonOptions);
             }
         }
-        // 旧格式：ANTHROPIC_BASE_URL 直接作为顶层属性
-        else if (dict.ContainsKey("ANTHROPIC_BASE_URL"))
+        // 旧格式：ANTHROPIC_BASE_URL 或 ANTHROPIC_AUTH_TOKEN 直接作为顶层属性
+        else if (dict.ContainsKey("ANTHROPIC_BASE_URL") || dict.ContainsKey("ANTHROPIC_AUTH_TOKEN"))
         {
             dict["CLAUDE_CODE_ATTRIBUTION_HEADER"] = JsonSerializer.SerializeToElement("0");
         }
@@ -298,8 +331,77 @@ public class ConfigService
         }
     }
 
+    /// <summary>
+    /// 从设置中提取 BaseUrl 和 AuthToken（兼容 env 格式与顶层属性格式）
+    /// </summary>
+    public (string baseUrl, string authToken) ExtractKeyCredentials(ClaudeSettings? settings)
+    {
+        if (settings?.ExtensionData == null)
+        {
+            return (string.Empty, string.Empty);
+        }
+
+        string baseUrl = string.Empty;
+        string authToken = string.Empty;
+
+        // 优先检查 env 对象
+        if (settings.ExtensionData.TryGetValue("env", out var envElement) &&
+            envElement.ValueKind == JsonValueKind.Object)
+        {
+            if (envElement.TryGetProperty("ANTHROPIC_BASE_URL", out var b) && b.ValueKind == JsonValueKind.String)
+            {
+                baseUrl = b.GetString() ?? string.Empty;
+            }
+            if (envElement.TryGetProperty("ANTHROPIC_AUTH_TOKEN", out var a) && a.ValueKind == JsonValueKind.String)
+            {
+                authToken = a.GetString() ?? string.Empty;
+            }
+        }
+
+        // 兼容顶层属性
+        if (string.IsNullOrEmpty(baseUrl) &&
+            settings.ExtensionData.TryGetValue("ANTHROPIC_BASE_URL", out var topBaseUrl) &&
+            topBaseUrl.ValueKind == JsonValueKind.String)
+        {
+            baseUrl = topBaseUrl.GetString() ?? string.Empty;
+        }
+
+        if (string.IsNullOrEmpty(authToken) &&
+            settings.ExtensionData.TryGetValue("ANTHROPIC_AUTH_TOKEN", out var topAuthToken) &&
+            topAuthToken.ValueKind == JsonValueKind.String)
+        {
+            authToken = topAuthToken.GetString() ?? string.Empty;
+        }
+
+        return (baseUrl, authToken);
+    }
+
     public bool IsProfileActive(Profile profile, ClaudeSettings? currentSettings)
     {
+        var (currentBaseUrl, currentAuthToken) = ExtractKeyCredentials(currentSettings);
+        var (profileBaseUrl, profileAuthToken) = ExtractKeyCredentials(profile.Settings);
+
+        bool isProfileOfficial = string.IsNullOrEmpty(profileBaseUrl) && string.IsNullOrEmpty(profileAuthToken);
+        bool isCurrentOfficial = string.IsNullOrEmpty(currentBaseUrl) && string.IsNullOrEmpty(currentAuthToken);
+
+        if (isProfileOfficial)
+        {
+            // 官方配置：当当前环境也没有自定义 baseUrl 和 authToken 时视为激活
+            return isCurrentOfficial;
+        }
+
+        if (isCurrentOfficial)
+        {
+            return false;
+        }
+
+        // 非官方配置：优先比对关键凭据 BaseUrl 和 AuthToken
+        if (!string.IsNullOrEmpty(profileBaseUrl) && !string.IsNullOrEmpty(profileAuthToken))
+        {
+            return profileBaseUrl == currentBaseUrl && profileAuthToken == currentAuthToken;
+        }
+
+        // 回退到子集匹配
         if (currentSettings?.ExtensionData == null || profile.Settings.ExtensionData == null || profile.Settings.ExtensionData.Count == 0)
         {
             return false;
@@ -329,11 +431,6 @@ public class ConfigService
             profile.IsActive = false;
         }
 
-        if (currentSettings?.ExtensionData == null)
-        {
-            return;
-        }
-
         // 找出所有匹配的配置及其匹配程度（设置项数量）
         var matchedProfiles = profiles
             .Where(p => IsProfileActive(p, currentSettings))
@@ -344,17 +441,33 @@ public class ConfigService
             })
             .ToList();
 
-        // 只选择匹配程度最高的配置作为激活配置
-        // 如果有多个配置得分相同，则都不激活（避免歧义）
         if (matchedProfiles.Count > 0)
         {
             var maxScore = matchedProfiles.Max(m => m.MatchScore);
             var bestMatches = matchedProfiles.Where(m => m.MatchScore == maxScore).ToList();
 
-            // 只有当最高得分配置唯一时才标记为激活
+            // 只有当最高得分配置唯一时标记为激活
             if (bestMatches.Count == 1)
             {
                 bestMatches[0].Profile.IsActive = true;
+            }
+            else
+            {
+                // 如果得分相同，检查是否有且仅有一个与当前 BaseUrl 和 AuthToken 完全一致的非空配置
+                var (currentBaseUrl, currentAuthToken) = ExtractKeyCredentials(currentSettings);
+                if (!string.IsNullOrEmpty(currentBaseUrl) && !string.IsNullOrEmpty(currentAuthToken))
+                {
+                    var exactMatches = bestMatches.Where(m =>
+                    {
+                        var (b, a) = ExtractKeyCredentials(m.Profile.Settings);
+                        return b == currentBaseUrl && a == currentAuthToken;
+                    }).ToList();
+
+                    if (exactMatches.Count == 1)
+                    {
+                        exactMatches[0].Profile.IsActive = true;
+                    }
+                }
             }
         }
     }

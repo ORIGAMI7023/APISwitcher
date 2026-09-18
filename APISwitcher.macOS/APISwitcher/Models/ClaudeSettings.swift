@@ -12,18 +12,19 @@ struct ClaudeSettings: Codable, Equatable, Sendable {
     var env: [String: String]?
 
     // 动态存储其他未知属性
-    private var additionalProperties: [String: AnyCodableValue] = [:]
+    var additionalProperties: [String: AnyCodableValue] = [:]
 
     private enum CodingKeys: String, CodingKey {
         case alwaysThinkingEnabled, env
     }
 
-    init(alwaysThinkingEnabled: Bool? = false, env: [String: String]? = nil) {
+    init(alwaysThinkingEnabled: Bool? = false, env: [String: String]? = nil, additionalProperties: [String: AnyCodableValue] = [:]) {
         self.alwaysThinkingEnabled = alwaysThinkingEnabled
         self.env = env
+        self.additionalProperties = additionalProperties
     }
 
-    init(from decoder: Decoder) throws {
+    init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: DynamicCodingKeys.self)
 
         alwaysThinkingEnabled = try? container.decode(Bool.self, forKey: DynamicCodingKeys(stringValue: "alwaysThinkingEnabled")!)
@@ -38,7 +39,7 @@ struct ClaudeSettings: Codable, Equatable, Sendable {
         }
     }
 
-    func encode(to encoder: Encoder) throws {
+    func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: DynamicCodingKeys.self)
 
         if let alwaysThinkingEnabled = alwaysThinkingEnabled {

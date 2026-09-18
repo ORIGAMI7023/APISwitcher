@@ -10,7 +10,7 @@ import SwiftUI
 
 @MainActor
 protocol ProfileFormDelegate: AnyObject {
-    func didSaveProfile(_ profile: Profile, isNew: Bool)
+    func didSaveProfile(_ profile: Profile, oldName: String?, isNew: Bool)
     func didCancelForm()
 }
 
@@ -33,40 +33,56 @@ class ProfileFormViewModel {
     var errorMessage: String?
 
     private let originalProfile: Profile?
-    private weak var delegate: ProfileFormDelegate?
+    private weak var delegate: (any ProfileFormDelegate)?
 
     var isNew: Bool {
         originalProfile == nil
+    }
+
+    var isOfficial: Bool {
+        guard let profile = originalProfile else { return false }
+        let dict = profile.settings.toDictionary()
+        let env = dict["env"] as? [String: Any] ?? [:]
+        let baseUrl = (env["ANTHROPIC_BASE_URL"] as? String) ?? (dict["ANTHROPIC_BASE_URL"] as? String) ?? ""
+        let authToken = (env["ANTHROPIC_AUTH_TOKEN"] as? String) ?? (dict["ANTHROPIC_AUTH_TOKEN"] as? String) ?? ""
+        return baseUrl.isEmpty && authToken.isEmpty
     }
 
     var title: String {
         isNew ? "添加配置" : "编辑配置"
     }
 
-    init(profile: Profile? = nil, delegate: ProfileFormDelegate? = nil) {
+    init(profile: Profile? = nil, delegate: (any ProfileFormDelegate)? = nil) {
         self.originalProfile = profile
         self.delegate = delegate
 
         // 初始化字段
         self.name = profile?.name ?? ""
 
-        // 从 settings.env 中提取值
-        let env = profile?.settings.env ?? [:]
-        self.authToken = env["ANTHROPIC_AUTH_TOKEN"] ?? ""
-        self.baseUrl = env["ANTHROPIC_BASE_URL"] ?? ""
-        self.defaultModel = env["ANTHROPIC_MODEL"] ?? ""
-        self.defaultHaikuModel = env["ANTHROPIC_DEFAULT_HAIKU_MODEL"] ?? ""
-        self.defaultSonnetModel = env["ANTHROPIC_DEFAULT_SONNET_MODEL"] ?? ""
-        self.defaultOpusModel = env["ANTHROPIC_DEFAULT_OPUS_MODEL"] ?? ""
+        // 从 settings 中提取值（兼容 env 对象以及顶层属性两种格式）
+        let dict = profile?.settings.toDictionary() ?? [:]
+        let env = (dict["env"] as? [String: Any]) ?? [:]
+        self.authToken = (env["ANTHROPIC_AUTH_TOKEN"] as? String) ?? (dict["ANTHROPIC_AUTH_TOKEN"] as? String) ?? ""
+        self.baseUrl = (env["ANTHROPIC_BASE_URL"] as? String) ?? (dict["ANTHROPIC_BASE_URL"] as? String) ?? ""
+        self.defaultModel = (env["ANTHROPIC_MODEL"] as? String) ?? (dict["ANTHROPIC_MODEL"] as? String) ?? ""
+        self.defaultHaikuModel = (env["ANTHROPIC_DEFAULT_HAIKU_MODEL"] as? String) ?? (dict["ANTHROPIC_DEFAULT_HAIKU_MODEL"] as? String) ?? ""
+        self.defaultSonnetModel = (env["ANTHROPIC_DEFAULT_SONNET_MODEL"] as? String) ?? (dict["ANTHROPIC_DEFAULT_SONNET_MODEL"] as? String) ?? ""
+        self.defaultOpusModel = (env["ANTHROPIC_DEFAULT_OPUS_MODEL"] as? String) ?? (dict["ANTHROPIC_DEFAULT_OPUS_MODEL"] as? String) ?? ""
     }
 
     /// 验证表单
     func validate() -> Bool {
         errorMessage = nil
 
-        if name.trimmingCharacters(in: .whitespaces).isEmpty {
+        let trimmedName = name.trimmingCharacters(in: .whitespaces)
+        if trimmedName.isEmpty {
             errorMessage = "请输入配置名称"
             return false
+        }
+
+        // 如果是官方配置且没有填 baseUrl/token，允许只修改配置名称
+        if isOfficial && authToken.trimmingCharacters(in: .whitespaces).isEmpty && baseUrl.trimmingCharacters(in: .whitespaces).isEmpty {
+            return true
         }
 
         if authToken.trimmingCharacters(in: .whitespaces).isEmpty {
@@ -74,24 +90,39 @@ class ProfileFormViewModel {
             return false
         }
 
-        if baseUrl.trimmingCharacters(in: .whitespaces).isEmpty {
+        let trimmedBaseUrl = baseUrl.trimmingCharacters(in: .whitespaces)
+        if trimmedBaseUrl.isEmpty {
             errorMessage = "请输入 Base URL"
+            return false
+        }
+
+        if let url = URL(string: trimmedBaseUrl), url.scheme != nil, url.host != nil {
+            // URL 格式有效
+        } else {
+            errorMessage = "Base URL 格式不正确（例如: https://api.example.com）"
             return false
         }
 
         return true
     }
 
-    /// 保存
-    func save() {
-        guard validate() else { return }
+    /// 保存，成功返回 true，失败返回 false
+    @discardableResult
+    func save() -> Bool {
+        guard validate() else { return false }
 
-        // 构建 env 字典（只包含非空值）
+        let trimmedName = name.trimmingCharacters(in: .whitespaces)
+        let trimmedToken = authToken.trimmingCharacters(in: .whitespaces)
+        let trimmedBaseUrl = baseUrl.trimmingCharacters(in: .whitespaces)
+
         var env: [String: String] = [:]
 
-        // 必填项
-        env["ANTHROPIC_AUTH_TOKEN"] = authToken.trimmingCharacters(in: .whitespaces)
-        env["ANTHROPIC_BASE_URL"] = baseUrl.trimmingCharacters(in: .whitespaces)
+        if !trimmedToken.isEmpty {
+            env["ANTHROPIC_AUTH_TOKEN"] = trimmedToken
+        }
+        if !trimmedBaseUrl.isEmpty {
+            env["ANTHROPIC_BASE_URL"] = trimmedBaseUrl
+        }
 
         // 可选项（只有非空才添加）
         let trimmedDefaultModel = defaultModel.trimmingCharacters(in: .whitespaces)
@@ -114,23 +145,40 @@ class ProfileFormViewModel {
             env["ANTHROPIC_DEFAULT_OPUS_MODEL"] = trimmedOpusModel
         }
 
-        // 固定值
-        env["API_TIMEOUT_MS"] = "3000000"
-        env["CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"] = "1"
+        if !env.isEmpty {
+            env["API_TIMEOUT_MS"] = "3000000"
+            env["CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"] = "1"
+        }
+
+        // 保留原配置中的未知属性（如 mcpServers 等），同时清理可能被迁移到 env 的顶层旧键
+        var additionalProps = originalProfile?.settings.additionalProperties ?? [:]
+        additionalProps.removeValue(forKey: "ANTHROPIC_AUTH_TOKEN")
+        additionalProps.removeValue(forKey: "ANTHROPIC_BASE_URL")
+        additionalProps.removeValue(forKey: "ANTHROPIC_MODEL")
+        additionalProps.removeValue(forKey: "ANTHROPIC_DEFAULT_HAIKU_MODEL")
+        additionalProps.removeValue(forKey: "ANTHROPIC_DEFAULT_SONNET_MODEL")
+        additionalProps.removeValue(forKey: "ANTHROPIC_DEFAULT_OPUS_MODEL")
+        additionalProps.removeValue(forKey: "API_TIMEOUT_MS")
+        additionalProps.removeValue(forKey: "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC")
+        additionalProps.removeValue(forKey: "CLAUDE_CODE_ATTRIBUTION_HEADER")
 
         // 创建 settings
         let settings = ClaudeSettings(
-            alwaysThinkingEnabled: false,
-            env: env
+            alwaysThinkingEnabled: originalProfile?.settings.alwaysThinkingEnabled ?? false,
+            env: env.isEmpty ? nil : env,
+            additionalProperties: additionalProps
         )
 
-        // 创建 profile
+        // 创建 profile，保留原本的扩展属性（如 balanceApi、subscriptionApi 等）
         let profile = Profile(
-            name: name.trimmingCharacters(in: .whitespaces),
-            settings: settings
+            name: trimmedName,
+            isActive: originalProfile?.isActive ?? false,
+            settings: settings,
+            additionalProperties: originalProfile?.additionalProperties ?? [:]
         )
 
-        delegate?.didSaveProfile(profile, isNew: isNew)
+        delegate?.didSaveProfile(profile, oldName: originalProfile?.name, isNew: isNew)
+        return true
     }
 
     /// 取消

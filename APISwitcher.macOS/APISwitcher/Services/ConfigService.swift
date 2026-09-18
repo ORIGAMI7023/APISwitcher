@@ -29,7 +29,18 @@ class ConfigService {
 
     /// 使用默认编辑器打开文件
     func openFileWithDefaultEditor(_ fileURL: URL) throws {
-        // 使用 NSWorkspace 打开文件，系统会自动使用默认编辑器
+        // 如果文件不存在，先尝试创建默认内容
+        if !FileManager.default.fileExists(atPath: fileURL.path) {
+            try PathHelper.ensureDirectoryExists(for: fileURL)
+            if fileURL.lastPathComponent == "settings.json" {
+                let emptyJson = "{}\n"
+                try emptyJson.write(to: fileURL, atomically: true, encoding: .utf8)
+            } else if fileURL.lastPathComponent == "app_profiles.json" {
+                let emptyArray = "[]\n"
+                try emptyArray.write(to: fileURL, atomically: true, encoding: .utf8)
+            }
+        }
+
         guard FileManager.default.fileExists(atPath: fileURL.path) else {
             throw ConfigError.fileNotFound(fileURL.path)
         }
@@ -65,11 +76,12 @@ class ConfigService {
         return try decoder.decode(ClaudeSettings.self, from: data)
     }
 
-    /// 判断配置是否为官方配置（没有自定义 env）
-    private func isOfficialProfile(_ profile: Profile) -> Bool {
-        let env = profile.settings.env ?? [:]
-        let baseUrl = env["ANTHROPIC_BASE_URL"] ?? ""
-        let authToken = env["ANTHROPIC_AUTH_TOKEN"] ?? ""
+    /// 判断配置是否为官方配置（没有自定义 env 且没有顶层 BaseUrl / Token）
+    func isOfficialProfile(_ profile: Profile) -> Bool {
+        let dict = profile.settings.toDictionary()
+        let env = dict["env"] as? [String: Any] ?? [:]
+        let baseUrl = (env["ANTHROPIC_BASE_URL"] as? String) ?? (dict["ANTHROPIC_BASE_URL"] as? String) ?? ""
+        let authToken = (env["ANTHROPIC_AUTH_TOKEN"] as? String) ?? (dict["ANTHROPIC_AUTH_TOKEN"] as? String) ?? ""
         return baseUrl.isEmpty && authToken.isEmpty
     }
 
@@ -105,10 +117,10 @@ class ConfigService {
 
         let currentDict = currentSettings.toDictionary()
 
-        // 提取当前设置的关键字段
+        // 提取当前设置的关键字段（兼容 env 格式与顶层格式）
         let currentEnv = currentDict["env"] as? [String: Any] ?? [:]
-        let currentBaseUrl = currentEnv["ANTHROPIC_BASE_URL"] as? String ?? ""
-        let currentAuthToken = currentEnv["ANTHROPIC_AUTH_TOKEN"] as? String ?? ""
+        let currentBaseUrl = (currentEnv["ANTHROPIC_BASE_URL"] as? String) ?? (currentDict["ANTHROPIC_BASE_URL"] as? String) ?? ""
+        let currentAuthToken = (currentEnv["ANTHROPIC_AUTH_TOKEN"] as? String) ?? (currentDict["ANTHROPIC_AUTH_TOKEN"] as? String) ?? ""
 
         print("🔍 当前 Claude 设置:")
         print("   BASE_URL: \(currentBaseUrl)")
@@ -118,17 +130,17 @@ class ConfigService {
             var updated = profile
             let profileDict = profile.settings.toDictionary()
 
-            // 提取配置的关键字段
+            // 提取配置的关键字段（兼容 env 格式与顶层格式）
             let profileEnv = profileDict["env"] as? [String: Any] ?? [:]
-            let profileBaseUrl = profileEnv["ANTHROPIC_BASE_URL"] as? String ?? ""
-            let profileAuthToken = profileEnv["ANTHROPIC_AUTH_TOKEN"] as? String ?? ""
+            let profileBaseUrl = (profileEnv["ANTHROPIC_BASE_URL"] as? String) ?? (profileDict["ANTHROPIC_BASE_URL"] as? String) ?? ""
+            let profileAuthToken = (profileEnv["ANTHROPIC_AUTH_TOKEN"] as? String) ?? (profileDict["ANTHROPIC_AUTH_TOKEN"] as? String) ?? ""
 
             // 判断是否匹配
             if profileBaseUrl.isEmpty && profileAuthToken.isEmpty {
-                // 配置没有 env（官方配置），匹配当前也没有自定义 env 的情况
+                // 配置没有自定义 env / base_url（官方配置），匹配当前也没有自定义 env 的情况
                 updated.isActive = currentBaseUrl.isEmpty && currentAuthToken.isEmpty
             } else {
-                // 配置有 env，需要完全匹配
+                // 配置有自定义 env，需要 BaseUrl 和 Token 完全匹配
                 updated.isActive = profileBaseUrl == currentBaseUrl && profileAuthToken == currentAuthToken
             }
 
@@ -141,24 +153,37 @@ class ConfigService {
     /// 添加配置
     func addProfile(_ profile: Profile) throws {
         var profiles = try loadProfiles()
+        if profiles.contains(where: { $0.name.caseInsensitiveCompare(profile.name) == .orderedSame }) {
+            throw ConfigError.duplicateProfileName(profile.name)
+        }
         profiles.append(profile)
         try saveProfiles(profiles)
     }
 
     /// 更新配置
-    func updateProfile(_ profile: Profile) throws {
+    func updateProfile(oldName: String, updatedProfile: Profile) throws {
         var profiles = try loadProfiles()
-        if let index = profiles.firstIndex(where: { $0.id == profile.id }) {
-            profiles[index] = profile
-            try saveProfiles(profiles)
-        } else {
+        guard let index = profiles.firstIndex(where: { $0.name == oldName }) else {
             throw ConfigError.profileNotFound
         }
+
+        // 如果修改了名称，检查新名称是否重复
+        if oldName != updatedProfile.name {
+            if profiles.contains(where: { $0.name.caseInsensitiveCompare(updatedProfile.name) == .orderedSame }) {
+                throw ConfigError.duplicateProfileName(updatedProfile.name)
+            }
+        }
+
+        profiles[index] = updatedProfile
+        try saveProfiles(profiles)
     }
 
     /// 删除配置
     func deleteProfile(_ profile: Profile) throws {
         var profiles = try loadProfiles()
+        if profiles.count <= 1 {
+            throw ConfigError.cannotDeleteLastProfile
+        }
         profiles.removeAll { $0.id == profile.id }
         try saveProfiles(profiles)
     }
@@ -167,6 +192,8 @@ class ConfigService {
 enum ConfigError: LocalizedError {
     case claudeSettingsNotFound
     case profileNotFound
+    case duplicateProfileName(String)
+    case cannotDeleteLastProfile
     case fileNotFound(String)
 
     var errorDescription: String? {
@@ -175,6 +202,10 @@ enum ConfigError: LocalizedError {
             return "未找到 Claude 设置文件 (~/.claude/settings.json)"
         case .profileNotFound:
             return "配置不存在"
+        case .duplicateProfileName(let name):
+            return "配置名称 \"\(name)\" 已存在"
+        case .cannotDeleteLastProfile:
+            return "不能删除最后一个配置"
         case .fileNotFound(let path):
             return "文件不存在: \(path)"
         }

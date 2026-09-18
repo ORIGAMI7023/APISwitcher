@@ -20,9 +20,12 @@ class MainViewModel {
     var refreshUI: (() -> Void)?
 
     private let configService = ConfigService()
+    private var isInitialized = false
 
     /// 初始化
     func initialize() async {
+        if isInitialized { return }
+        isInitialized = true
         await loadProfiles()
     }
 
@@ -126,12 +129,12 @@ class MainViewModel {
 
 // MARK: - ProfileFormDelegate
 extension MainViewModel: ProfileFormDelegate {
-    func didSaveProfile(_ profile: Profile, isNew: Bool) {
+    func didSaveProfile(_ profile: Profile, oldName: String?, isNew: Bool) {
         do {
             if isNew {
                 try configService.addProfile(profile)
             } else {
-                try configService.updateProfile(profile)
+                try configService.updateProfile(oldName: oldName ?? profile.name, updatedProfile: profile)
             }
 
             Task {

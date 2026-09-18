@@ -8,6 +8,7 @@ public partial class Profile : ObservableObject
     [ObservableProperty]
     private string name = string.Empty;
 
+    [JsonIgnore]
     [ObservableProperty]
     private bool isActive;
 

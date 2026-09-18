@@ -8,12 +8,9 @@
 import SwiftUI
 
 struct ProfileCardView: View {
-    let profileIndex: Int
+    let profile: Profile
     @Bindable var viewModel: MainViewModel
-
-    private var profile: Profile {
-        viewModel.profiles[profileIndex]
-    }
+    @State private var showDeleteConfirmation = false
 
     var body: some View {
         ZStack {
@@ -52,18 +49,11 @@ struct ProfileCardView: View {
                     .background(Color.black.opacity(0.0001)) // 透明但可点击
                     .cornerRadius(3)
                     .help("编辑配置")
-                    .onHover { isHovered in
-                        if isHovered {
-                            NSCursor.pointingHand.push()
-                        } else {
-                            NSCursor.pop()
-                        }
-                    }
 
                     // 删除按钮（激活的配置不显示）
                     if !profile.isActive {
                         Button {
-                            viewModel.deleteProfile(profile)
+                            showDeleteConfirmation = true
                         } label: {
                             Text("×")
                                 .font(.system(size: 16))
@@ -74,12 +64,15 @@ struct ProfileCardView: View {
                         .background(Color.black.opacity(0.0001))
                         .cornerRadius(3)
                         .help("删除配置")
-                        .onHover { isHovered in
-                            if isHovered {
-                                NSCursor.pointingHand.push()
-                            } else {
-                                NSCursor.pop()
+                        .confirmationDialog(
+                            "确定要删除配置 \"\(profile.name)\" 吗？此操作不可撤销。",
+                            isPresented: $showDeleteConfirmation,
+                            titleVisibility: .visible
+                        ) {
+                            Button("删除", role: .destructive) {
+                                viewModel.deleteProfile(profile)
                             }
+                            Button("取消", role: .cancel) {}
                         }
                     }
                 }
@@ -106,9 +99,9 @@ struct ProfileCardView: View {
         }
         .onHover { isHovered in
             if isHovered {
-                NSCursor.pointingHand.push()
+                NSCursor.pointingHand.set()
             } else {
-                NSCursor.pop()
+                NSCursor.arrow.set()
             }
         }
     }
@@ -116,8 +109,8 @@ struct ProfileCardView: View {
 
 #Preview {
     let viewModel = MainViewModel()
-    // 预览时无法直接添加 profiles，使用空视图占位
-    ProfileCardView(profileIndex: 0, viewModel: viewModel)
+    let dummyProfile = Profile(name: "Claude官方", isActive: true, settings: ClaudeSettings())
+    ProfileCardView(profile: dummyProfile, viewModel: viewModel)
         .padding()
         .frame(width: 400)
 }

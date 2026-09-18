@@ -2,12 +2,11 @@ import Foundation
 
 // 测试 ClaudeSettings 序列化
 let settings = ClaudeSettings(
-    claude: ClaudeSettings.ClaudeConfig(
-        apiKey: "test-key",
-        model: "claude-sonnet-4",
-        baseURL: "https://api.test.com"
-    ),
-    mcpServers: nil
+    alwaysThinkingEnabled: false,
+    env: [
+        "ANTHROPIC_AUTH_TOKEN": "test-token",
+        "ANTHROPIC_BASE_URL": "https://test.com"
+    ]
 )
 
 // 添加 env 等额外属性

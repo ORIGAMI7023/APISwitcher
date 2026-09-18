@@ -7,6 +7,7 @@
 
 import AppKit
 import SwiftUI
+import UserNotifications
 
 @MainActor
 class StatusBarController: ObservableObject {
@@ -119,11 +120,12 @@ class StatusBarController: ObservableObject {
     }
 
     private func showNotification(title: String, message: String) {
-        let notification = NSUserNotification()
-        notification.title = title
-        notification.informativeText = message
-        notification.soundName = NSUserNotificationDefaultSoundName
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = message
+        content.sound = .default
 
-        NSUserNotificationCenter.default.deliver(notification)
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+        UNUserNotificationCenter.current().add(request)
     }
 }

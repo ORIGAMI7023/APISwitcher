@@ -36,12 +36,12 @@ struct ProfileFormView: View {
                     }
 
                     // 必填设置
-                    GroupBox("必填设置") {
+                    GroupBox(viewModel.isOfficial ? "API 设置（官方配置可留空）" : "必填设置") {
                         VStack(alignment: .leading, spacing: 12) {
-                            FormField("API Key *", text: $viewModel.authToken)
+                            FormField(viewModel.isOfficial ? "API Key" : "API Key *", text: $viewModel.authToken)
                                 .help("ANTHROPIC_AUTH_TOKEN")
 
-                            FormField("Base URL *", text: $viewModel.baseUrl)
+                            FormField(viewModel.isOfficial ? "Base URL" : "Base URL *", text: $viewModel.baseUrl)
                                 .help("ANTHROPIC_BASE_URL，例如: https://api.anthropic.com")
                         }
                     }
@@ -93,8 +93,9 @@ struct ProfileFormView: View {
                 Spacer()
 
                 Button("保存") {
-                    viewModel.save()
-                    dismiss()
+                    if viewModel.save() {
+                        dismiss()
+                    }
                 }
                 .keyboardShortcut(.defaultAction)
                 .buttonStyle(.borderedProminent)

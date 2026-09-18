@@ -29,9 +29,9 @@ struct MainView: View {
                     ],
                     spacing: 16
                 ) {
-                    ForEach(viewModel.profiles.indices, id: \.self) { index in
-                        ProfileCardView(profileIndex: index, viewModel: viewModel)
-                            .id("\(viewModel.profiles[index].id)-\(viewModel.profiles[index].isActive)-\(refreshTrigger)")
+                    ForEach(viewModel.profiles) { profile in
+                        ProfileCardView(profile: profile, viewModel: viewModel)
+                            .id("\(profile.id)-\(profile.isActive)-\(refreshTrigger)")
                     }
                 }
                 .frame(maxWidth: .infinity)

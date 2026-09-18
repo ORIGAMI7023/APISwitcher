@@ -184,6 +184,10 @@ public class BalanceService : IDisposable
                 }
             }
         }
+        if (settings.ExtensionData?.TryGetValue("ANTHROPIC_AUTH_TOKEN", out var topToken) == true && topToken.ValueKind == JsonValueKind.String)
+        {
+            return topToken.GetString();
+        }
         return null;
     }
 
@@ -201,6 +205,10 @@ public class BalanceService : IDisposable
                     return baseUrlElement.GetString();
                 }
             }
+        }
+        if (settings.ExtensionData?.TryGetValue("ANTHROPIC_BASE_URL", out var topBaseUrl) == true && topBaseUrl.ValueKind == JsonValueKind.String)
+        {
+            return topBaseUrl.GetString();
         }
         return null;
     }
@@ -283,15 +291,30 @@ public class BalanceService : IDisposable
         // 根据类型转换
         if (typeof(T) == typeof(long))
         {
-            return (T)(object)current.GetValue<long>();
+            if (current is JsonValue jval)
+            {
+                if (jval.TryGetValue<long>(out var lVal)) return (T)(object)lVal;
+                if (jval.TryGetValue<double>(out var dVal)) return (T)(object)(long)dVal;
+                if (jval.TryGetValue<decimal>(out var decVal)) return (T)(object)(long)decVal;
+                if (jval.TryGetValue<string>(out var strVal))
+                {
+                    if (long.TryParse(strVal, out var parsedLong)) return (T)(object)parsedLong;
+                    if (double.TryParse(strVal, out var parsedDouble)) return (T)(object)(long)parsedDouble;
+                }
+            }
+            return (T)(object)Convert.ToInt64(current.GetValue<object>());
         }
         else if (typeof(T) == typeof(bool))
         {
-            return (T)(object)current.GetValue<bool>();
+            if (current is JsonValue jval && jval.TryGetValue<bool>(out var bVal))
+            {
+                return (T)(object)bVal;
+            }
+            return (T)(object)Convert.ToBoolean(current.GetValue<object>());
         }
         else if (typeof(T) == typeof(string))
         {
-            return (T)(object)(current.GetValue<string>() ?? string.Empty);
+            return (T)(object)(current.ToString() ?? string.Empty);
         }
 
         throw new NotSupportedException($"不支持的类型: {typeof(T)}");

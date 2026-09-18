@@ -18,18 +18,15 @@ let package = Package(
             path: "APISwitcher",
             exclude: [
                 "Info.plist",
-                "Resources/app_profiles.example.json"
+                "Resources/AppIcon.icns",
+                "Resources/AppIcon.iconset"
             ],
             resources: [
                 .process("Resources/Assets.xcassets"),
                 .copy("Resources/app_profiles.example.json")
             ],
             swiftSettings: [
-                .enableUpcomingFeature("BareSlashRegexLiterals"),
-                .enableUpcomingFeature("ConciseMagicFile"),
                 .enableUpcomingFeature("ExistentialAny"),
-                .enableUpcomingFeature("ForwardTrailingClosures"),
-                .enableUpcomingFeature("ImplicitOpenExistentials"),
                 .enableUpcomingFeature("StrictConcurrency")
             ]
         )

@@ -234,9 +234,8 @@ public partial class MainViewModel : ObservableObject
         // 找到激活的配置
         var activeProfile = Profiles.FirstOrDefault(p => p.IsActive);
 
-        // 检查是否应该显示订阅面板（只有 Claude_Opus_4.5 才显示）
-        var shouldShow = activeProfile?.Name == "Claude_Opus_4.5" &&
-                         activeProfile?.ShouldShowSubscription == true;
+        // 检查是否应该显示订阅面板（已配置订阅API且当前激活时显示）
+        var shouldShow = activeProfile?.ShouldShowSubscription == true;
 
         if (!shouldShow)
         {
@@ -315,20 +314,9 @@ public partial class MainViewModel : ObservableObject
         EditingProfile = profile;
         FormProfileName = profile.Name;
 
-        // 从 Settings.ExtensionData 中提取 env 数据
-        if (profile.Settings.ExtensionData?.TryGetValue("env", out var envElement) == true
-            && envElement.ValueKind == System.Text.Json.JsonValueKind.Object)
-        {
-            if (envElement.TryGetProperty("ANTHROPIC_BASE_URL", out var baseUrlElement))
-            {
-                FormBaseUrl = baseUrlElement.GetString() ?? string.Empty;
-            }
-
-            if (envElement.TryGetProperty("ANTHROPIC_AUTH_TOKEN", out var tokenElement))
-            {
-                FormApiKey = tokenElement.GetString() ?? string.Empty;
-            }
-        }
+        var (baseUrl, authToken) = _configService.ExtractKeyCredentials(profile.Settings);
+        FormBaseUrl = baseUrl;
+        FormApiKey = authToken;
 
         IsFormViewVisible = true;
         OnPropertyChanged(nameof(FormTitle));
@@ -359,58 +347,103 @@ public partial class MainViewModel : ObservableObject
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(FormBaseUrl))
-            {
-                MessageBox.Show("请输入 Base URL", "验证失败", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+            bool isOfficialEdit = EditingProfile != null && _configService.IsOfficialProfile(EditingProfile)
+                && string.IsNullOrWhiteSpace(FormBaseUrl) && string.IsNullOrWhiteSpace(FormApiKey);
 
-            if (string.IsNullOrWhiteSpace(FormApiKey))
+            if (!isOfficialEdit)
             {
-                MessageBox.Show("请输入 API Key", "验证失败", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
+                if (string.IsNullOrWhiteSpace(FormBaseUrl))
+                {
+                    MessageBox.Show("请输入 Base URL", "验证失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
-            // 验证 URL 格式
-            if (!Uri.TryCreate(FormBaseUrl, UriKind.Absolute, out _))
-            {
-                MessageBox.Show("Base URL 格式不正确", "验证失败", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
+                if (string.IsNullOrWhiteSpace(FormApiKey))
+                {
+                    MessageBox.Show("请输入 API Key", "验证失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // 验证 URL 格式
+                if (!Uri.TryCreate(FormBaseUrl, UriKind.Absolute, out _))
+                {
+                    MessageBox.Show("Base URL 格式不正确", "验证失败", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
             }
 
             IsLoading = true;
             StatusMessage = EditingProfile == null ? "正在添加配置..." : "正在更新配置...";
 
-            // 构建配置对象
-            var profile = new Profile
-            {
-                Name = FormProfileName.Trim(),
-                Settings = new ClaudeSettings
-                {
-                    ExtensionData = new Dictionary<string, System.Text.Json.JsonElement>
-                    {
-                        ["env"] = System.Text.Json.JsonSerializer.SerializeToElement(new Dictionary<string, string>
-                        {
-                            ["ANTHROPIC_AUTH_TOKEN"] = FormApiKey.Trim(),
-                            ["ANTHROPIC_BASE_URL"] = FormBaseUrl.Trim(),
-                            ["API_TIMEOUT_MS"] = "3000000",
-                            ["CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"] = "1"
-                        }),
-                        ["alwaysThinkingEnabled"] = System.Text.Json.JsonSerializer.SerializeToElement(false)
-                    }
-                }
-            };
-
             if (EditingProfile == null)
             {
                 // 添加模式
-                await _configService.AddProfileAsync(profile);
+                var newProfile = new Profile
+                {
+                    Name = FormProfileName.Trim(),
+                    Settings = new ClaudeSettings
+                    {
+                        ExtensionData = new Dictionary<string, System.Text.Json.JsonElement>
+                        {
+                            ["env"] = System.Text.Json.JsonSerializer.SerializeToElement(new Dictionary<string, string>
+                            {
+                                ["ANTHROPIC_AUTH_TOKEN"] = FormApiKey.Trim(),
+                                ["ANTHROPIC_BASE_URL"] = FormBaseUrl.Trim(),
+                                ["API_TIMEOUT_MS"] = "3000000",
+                                ["CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"] = "1"
+                            }),
+                            ["alwaysThinkingEnabled"] = System.Text.Json.JsonSerializer.SerializeToElement(false)
+                        }
+                    }
+                };
+
+                await _configService.AddProfileAsync(newProfile);
                 StatusMessage = "配置添加成功";
             }
             else
             {
-                // 编辑模式
-                await _configService.UpdateProfileAsync(EditingProfile.Name, profile);
+                // 编辑模式：保留原有的 BalanceApi、SubscriptionApi 和未修改的扩展设置
+                var updatedProfile = EditingProfile;
+                updatedProfile.Name = FormProfileName.Trim();
+
+                if (!isOfficialEdit)
+                {
+                    var extData = updatedProfile.Settings.ExtensionData != null
+                        ? new Dictionary<string, System.Text.Json.JsonElement>(updatedProfile.Settings.ExtensionData)
+                        : new Dictionary<string, System.Text.Json.JsonElement>();
+
+                    // 清理可能存在于顶层的旧键
+                    extData.Remove("ANTHROPIC_AUTH_TOKEN");
+                    extData.Remove("ANTHROPIC_BASE_URL");
+                    extData.Remove("ANTHROPIC_MODEL");
+                    extData.Remove("ANTHROPIC_DEFAULT_HAIKU_MODEL");
+                    extData.Remove("ANTHROPIC_DEFAULT_SONNET_MODEL");
+                    extData.Remove("ANTHROPIC_DEFAULT_OPUS_MODEL");
+                    extData.Remove("API_TIMEOUT_MS");
+                    extData.Remove("CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC");
+                    extData.Remove("CLAUDE_CODE_ATTRIBUTION_HEADER");
+
+                    var envDict = new Dictionary<string, string>();
+                    if (extData.TryGetValue("env", out var existingEnv) && existingEnv.ValueKind == System.Text.Json.JsonValueKind.Object)
+                    {
+                        var parsed = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(existingEnv.GetRawText());
+                        if (parsed != null) envDict = parsed;
+                    }
+
+                    envDict["ANTHROPIC_AUTH_TOKEN"] = FormApiKey.Trim();
+                    envDict["ANTHROPIC_BASE_URL"] = FormBaseUrl.Trim();
+                    if (!envDict.ContainsKey("API_TIMEOUT_MS")) envDict["API_TIMEOUT_MS"] = "3000000";
+                    if (!envDict.ContainsKey("CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC")) envDict["CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"] = "1";
+
+                    extData["env"] = System.Text.Json.JsonSerializer.SerializeToElement(envDict);
+                    if (!extData.ContainsKey("alwaysThinkingEnabled"))
+                    {
+                        extData["alwaysThinkingEnabled"] = System.Text.Json.JsonSerializer.SerializeToElement(false);
+                    }
+                    updatedProfile.Settings.ExtensionData = extData;
+                }
+
+                await _configService.UpdateProfileAsync(EditingProfile.Name, updatedProfile);
                 StatusMessage = "配置更新成功";
             }
 
