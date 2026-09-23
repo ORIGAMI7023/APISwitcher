@@ -60,6 +60,9 @@ struct Profile: Identifiable, Codable, Equatable, Sendable {
     }
 
     static func == (lhs: Profile, rhs: Profile) -> Bool {
-        lhs.id == rhs.id
+        lhs.name == rhs.name &&
+        lhs.isActive == rhs.isActive &&
+        lhs.settings == rhs.settings &&
+        lhs.additionalProperties == rhs.additionalProperties
     }
 }

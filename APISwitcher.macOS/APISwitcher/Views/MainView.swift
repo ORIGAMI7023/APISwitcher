@@ -31,7 +31,7 @@ struct MainView: View {
                 ) {
                     ForEach(viewModel.profiles) { profile in
                         ProfileCardView(profile: profile, viewModel: viewModel)
-                            .id("\(profile.id)-\(profile.isActive)-\(refreshTrigger)")
+                            .id("\(profile.id)-\(profile.isActive)-\(profile.settings.env?.description ?? "")-\(refreshTrigger)")
                     }
                 }
                 .frame(maxWidth: .infinity)
@@ -104,7 +104,7 @@ struct MainView: View {
                 refreshTrigger.toggle()
             }
         }
-        .frame(width: 780, height: 400)
+        .frame(minWidth: 780, idealWidth: 780, minHeight: 450, idealHeight: 480)
     }
 }
 

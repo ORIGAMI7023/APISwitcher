@@ -59,12 +59,13 @@ class ProfileFormViewModel {
         // 初始化字段
         self.name = profile?.name ?? ""
 
-        // 从 settings 中提取值（兼容 env 对象以及顶层属性两种格式）
+        // 从 settings 中提取值（兼容 env 对象、顶层属性以及 claude 嵌套对象等格式）
         let dict = profile?.settings.toDictionary() ?? [:]
         let env = (dict["env"] as? [String: Any]) ?? [:]
-        self.authToken = (env["ANTHROPIC_AUTH_TOKEN"] as? String) ?? (dict["ANTHROPIC_AUTH_TOKEN"] as? String) ?? ""
-        self.baseUrl = (env["ANTHROPIC_BASE_URL"] as? String) ?? (dict["ANTHROPIC_BASE_URL"] as? String) ?? ""
-        self.defaultModel = (env["ANTHROPIC_MODEL"] as? String) ?? (dict["ANTHROPIC_MODEL"] as? String) ?? ""
+        let claudeDict = dict["claude"] as? [String: Any] ?? [:]
+        self.authToken = (env["ANTHROPIC_AUTH_TOKEN"] as? String) ?? (dict["ANTHROPIC_AUTH_TOKEN"] as? String) ?? (claudeDict["apiKey"] as? String) ?? ""
+        self.baseUrl = (env["ANTHROPIC_BASE_URL"] as? String) ?? (dict["ANTHROPIC_BASE_URL"] as? String) ?? (claudeDict["baseURL"] as? String) ?? ""
+        self.defaultModel = (env["ANTHROPIC_MODEL"] as? String) ?? (dict["ANTHROPIC_MODEL"] as? String) ?? (dict["model"] as? String) ?? (claudeDict["model"] as? String) ?? ""
         self.defaultHaikuModel = (env["ANTHROPIC_DEFAULT_HAIKU_MODEL"] as? String) ?? (dict["ANTHROPIC_DEFAULT_HAIKU_MODEL"] as? String) ?? ""
         self.defaultSonnetModel = (env["ANTHROPIC_DEFAULT_SONNET_MODEL"] as? String) ?? (dict["ANTHROPIC_DEFAULT_SONNET_MODEL"] as? String) ?? ""
         self.defaultOpusModel = (env["ANTHROPIC_DEFAULT_OPUS_MODEL"] as? String) ?? (dict["ANTHROPIC_DEFAULT_OPUS_MODEL"] as? String) ?? ""
@@ -145,7 +146,7 @@ class ProfileFormViewModel {
             env["ANTHROPIC_DEFAULT_OPUS_MODEL"] = trimmedOpusModel
         }
 
-        if !env.isEmpty {
+        if !isOfficial && !env.isEmpty {
             env["API_TIMEOUT_MS"] = "3000000"
             env["CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC"] = "1"
         }
@@ -161,6 +162,7 @@ class ProfileFormViewModel {
         additionalProps.removeValue(forKey: "API_TIMEOUT_MS")
         additionalProps.removeValue(forKey: "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC")
         additionalProps.removeValue(forKey: "CLAUDE_CODE_ATTRIBUTION_HEADER")
+        additionalProps.removeValue(forKey: "model")
 
         // 创建 settings
         let settings = ClaudeSettings(

@@ -41,6 +41,7 @@ class MainViewModel {
             profiles = loadedProfiles
             statusMessage = "加载完成，共 \(loadedProfiles.count) 个配置"
             isLoading = false
+            refreshUI?()
         } catch {
             statusMessage = "加载失败: \(error.localizedDescription)"
             isLoading = false
@@ -50,15 +51,15 @@ class MainViewModel {
 
     /// 切换配置
     func switchProfile(_ profile: Profile) async {
-        // 移除已选中检查，允许强制重新写入
-        statusMessage = "正在切换到 \(profile.name)..."
+        let targetProfile = profiles.first(where: { $0.id == profile.id }) ?? profile
+        statusMessage = "正在切换到 \(targetProfile.name)..."
         isLoading = true
 
         do {
-            try configService.switchProfile(profile)
+            try configService.switchProfile(targetProfile)
 
             // 使用 map 创建全新的数组，确保触发 SwiftUI 更新
-            let targetId = profile.id
+            let targetId = targetProfile.id
             let newProfiles = profiles.map { p in
                 var updated = p
                 updated.isActive = (p.id == targetId)
@@ -70,7 +71,7 @@ class MainViewModel {
             // 触发 UI 刷新
             refreshUI?()
 
-            statusMessage = "已切换到 \(profile.name)"
+            statusMessage = "已切换到 \(targetProfile.name)"
         } catch {
             statusMessage = "切换失败: \(error.localizedDescription)"
         }
@@ -86,7 +87,8 @@ class MainViewModel {
 
     /// 显示编辑表单
     func editProfile(_ profile: Profile) {
-        formViewModel = ProfileFormViewModel(profile: profile, delegate: self)
+        let targetProfile = profiles.first(where: { $0.id == profile.id }) ?? profile
+        formViewModel = ProfileFormViewModel(profile: targetProfile, delegate: self)
         showingForm = true
     }
 
@@ -134,7 +136,17 @@ extension MainViewModel: ProfileFormDelegate {
             if isNew {
                 try configService.addProfile(profile)
             } else {
-                try configService.updateProfile(oldName: oldName ?? profile.name, updatedProfile: profile)
+                let lookupName = oldName ?? profile.name
+                let wasActive = profiles.first(where: { $0.name == lookupName })?.isActive == true || profile.isActive
+
+                try configService.updateProfile(oldName: lookupName, updatedProfile: profile)
+
+                // 如果修改的是当前已激活的配置，立即将更新同步写入 ~/.claude/settings.json
+                if wasActive {
+                    var activeProfile = profile
+                    activeProfile.isActive = true
+                    try configService.switchProfile(activeProfile)
+                }
             }
 
             Task {

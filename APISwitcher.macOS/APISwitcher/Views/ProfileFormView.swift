@@ -25,7 +25,7 @@ struct ProfileFormView: View {
             Divider()
 
             // 表单内容
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 20) {
                     // 基本信息
                     GroupBox("基本信息") {
@@ -102,7 +102,7 @@ struct ProfileFormView: View {
             }
             .padding()
         }
-        .frame(width: 550, height: 500)
+        .frame(minWidth: 540, maxWidth: 600, minHeight: 460, maxHeight: 560)
     }
 }
 
@@ -119,7 +119,7 @@ struct FormField: View {
     var body: some View {
         HStack(alignment: .top) {
             Text("\(label):")
-                .frame(width: 120, alignment: .trailing)
+                .frame(width: 140, alignment: .trailing)
                 .padding(.top, 4)
 
             TextField("", text: $text)
