@@ -64,11 +64,20 @@ public partial class MainViewModel : ObservableObject
         await QueryActiveSubscriptionAsync();
     }
 
+    private DateTime _lastWindowActivationQueryTime = DateTime.MinValue;
+    private static readonly TimeSpan WindowActivationCooldown = TimeSpan.FromSeconds(30);
+
     /// <summary>
-    /// 当窗口激活时调用
+    /// 当窗口激活时调用（带30秒防抖冷却）
     /// </summary>
     public async Task OnWindowActivatedAsync()
     {
+        if (DateTime.UtcNow - _lastWindowActivationQueryTime < WindowActivationCooldown)
+        {
+            return;
+        }
+        _lastWindowActivationQueryTime = DateTime.UtcNow;
+
         await QueryAllBalancesAsync();
         await QueryActiveSubscriptionAsync();
     }
@@ -226,6 +235,8 @@ public partial class MainViewModel : ObservableObject
         }
     }
 
+    private CancellationTokenSource? _hideSubscriptionCts;
+
     /// <summary>
     /// 查询当前激活配置的订阅信息
     /// </summary>
@@ -239,6 +250,11 @@ public partial class MainViewModel : ObservableObject
 
         if (!shouldShow)
         {
+            // 取消可能正在等待的隐藏延时任务
+            _hideSubscriptionCts?.Cancel();
+            _hideSubscriptionCts?.Dispose();
+            _hideSubscriptionCts = null;
+
             // 先清除错误状态，避免收缩动画时显示"更新失败"
             if (ActiveSubscriptionInfo != null)
             {
@@ -249,10 +265,29 @@ public partial class MainViewModel : ObservableObject
             // 触发面板隐藏动画
             ShowSubscriptionPanel = false;
 
-            // 动画完成后再清空订阅信息（延迟执行）
-            _ = Task.Delay(350).ContinueWith(_ => ActiveSubscriptionInfo = null);
+            // 动画完成后再清空订阅信息（在UI线程安全执行并支持取消，防止竞态）
+            var cts = new CancellationTokenSource();
+            _hideSubscriptionCts = cts;
+            _ = Task.Delay(350, cts.Token).ContinueWith(t =>
+            {
+                if (!t.IsCanceled)
+                {
+                    Application.Current?.Dispatcher?.Invoke(() =>
+                    {
+                        if (!ShowSubscriptionPanel)
+                        {
+                            ActiveSubscriptionInfo = null;
+                        }
+                    });
+                }
+            }, TaskScheduler.Default);
             return;
         }
+
+        // 取消隐藏任务，防止刚查询出来就被旧的延迟回调清空
+        _hideSubscriptionCts?.Cancel();
+        _hideSubscriptionCts?.Dispose();
+        _hideSubscriptionCts = null;
 
         // 显示面板
         ShowSubscriptionPanel = true;

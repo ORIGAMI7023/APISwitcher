@@ -89,23 +89,44 @@ class ConfigService {
     func switchProfile(_ profile: Profile) throws {
         try PathHelper.ensureDirectoryExists(for: claudeSettingsPath)
 
-        var settings = profile.settings
+        var newSettings = profile.settings
         if !isOfficialProfile(profile) {
-            if settings.env == nil {
-                settings.env = [:]
+            if newSettings.env == nil {
+                newSettings.env = [:]
             }
-            settings.env?["CLAUDE_CODE_ATTRIBUTION_HEADER"] = "0"
+            newSettings.env?["CLAUDE_CODE_ATTRIBUTION_HEADER"] = "0"
         }
 
-        let data = try encoder.encode(settings)
-        try data.write(to: claudeSettingsPath, options: .atomic)
+        // 读取已有 settings.json 做增量合并，保留 permissions、hooks、mcpServers 等原生配置
+        var finalDict: [String: Any] = [:]
+        if FileManager.default.fileExists(atPath: claudeSettingsPath.path),
+           let existingData = try? Data(contentsOf: claudeSettingsPath),
+           let existingObj = try? JSONSerialization.jsonObject(with: existingData) as? [String: Any] {
+            finalDict = existingObj
+        }
 
-        // 调试：打印写入的内容
+        // 将新配置的内容合并进来
+        let newDict = newSettings.toDictionary()
+        if newSettings.env == nil {
+            finalDict.removeValue(forKey: "env")
+        }
+        // 清除顶层可能残留的旧版键
+        finalDict.removeValue(forKey: "ANTHROPIC_AUTH_TOKEN")
+        finalDict.removeValue(forKey: "ANTHROPIC_BASE_URL")
+        finalDict.removeValue(forKey: "ANTHROPIC_MODEL")
+        finalDict.removeValue(forKey: "ANTHROPIC_DEFAULT_HAIKU_MODEL")
+        finalDict.removeValue(forKey: "ANTHROPIC_DEFAULT_SONNET_MODEL")
+        finalDict.removeValue(forKey: "ANTHROPIC_DEFAULT_OPUS_MODEL")
+
+        for (k, v) in newDict {
+            finalDict[k] = v
+        }
+
+        let mergedData = try JSONSerialization.data(withJSONObject: finalDict, options: [.prettyPrinted, .sortedKeys])
+        try mergedData.write(to: claudeSettingsPath, options: .atomic)
+
         print("✅ 已切换到配置: \(profile.name)")
         print("📁 写入路径: \(claudeSettingsPath.path)")
-        if let jsonString = String(data: data, encoding: .utf8) {
-            print("📝 写入内容:\n\(jsonString)")
-        }
     }
 
     /// 标记激活的配置（通过匹配关键字段）
@@ -124,7 +145,7 @@ class ConfigService {
 
         print("🔍 当前 Claude 设置:")
         print("   BASE_URL: \(currentBaseUrl)")
-        print("   AUTH_TOKEN: \(currentAuthToken.prefix(20))...")
+        print("   AUTH_TOKEN: \(currentAuthToken.isEmpty ? "[未配置]" : "[已配置]")")
 
         return profiles.map { profile in
             var updated = profile
@@ -167,9 +188,9 @@ class ConfigService {
             throw ConfigError.profileNotFound
         }
 
-        // 如果修改了名称，检查新名称是否重复
+        // 如果修改了名称，检查新名称是否重复（排除当前正在编辑的项目，支持大小写修改）
         if oldName != updatedProfile.name {
-            if profiles.contains(where: { $0.name.caseInsensitiveCompare(updatedProfile.name) == .orderedSame }) {
+            if profiles.enumerated().contains(where: { i, p in i != index && p.name.caseInsensitiveCompare(updatedProfile.name) == .orderedSame }) {
                 throw ConfigError.duplicateProfileName(updatedProfile.name)
             }
         }

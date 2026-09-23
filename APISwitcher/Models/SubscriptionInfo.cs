@@ -107,14 +107,26 @@ public partial class SubscriptionInfo : ObservableObject
     public double TotalUsagePercent => TotalQuotaLimit > 0 ? (double)TotalQuotaUsed / TotalQuotaLimit * 100 : 0;
 
     /// <summary>
+    /// 解析 Unix 时间戳（自动适配秒或毫秒）
+    /// </summary>
+    private static DateTimeOffset ParseUnixTimestamp(long timestamp)
+    {
+        if (timestamp <= 0) return DateTimeOffset.MinValue;
+        // 如果大于 10^11（大于公元 5138 年秒级，或 1973 年毫秒级），按毫秒解析
+        return timestamp > 100_000_000_000L
+            ? DateTimeOffset.FromUnixTimeMilliseconds(timestamp)
+            : DateTimeOffset.FromUnixTimeSeconds(timestamp);
+    }
+
+    /// <summary>
     /// 剩余天数
     /// </summary>
     public int DaysRemaining
     {
         get
         {
-            if (ExpireTime == 0) return 0;
-            var expireDate = DateTimeOffset.FromUnixTimeSeconds(ExpireTime);
+            if (ExpireTime <= 0) return 0;
+            var expireDate = ParseUnixTimestamp(ExpireTime);
             var timeSpan = expireDate - DateTimeOffset.UtcNow;
             return Math.Max(0, (int)Math.Ceiling(timeSpan.TotalDays));
         }
@@ -127,8 +139,8 @@ public partial class SubscriptionInfo : ObservableObject
     {
         get
         {
-            if (ExpireTime == 0) return "未知";
-            var expireDate = DateTimeOffset.FromUnixTimeSeconds(ExpireTime).ToLocalTime();
+            if (ExpireTime <= 0) return "未知";
+            var expireDate = ParseUnixTimestamp(ExpireTime).ToLocalTime();
             return expireDate.ToString("yyyy/M/d HH:mm");
         }
     }

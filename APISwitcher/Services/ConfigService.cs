@@ -185,10 +185,10 @@ public class ConfigService
         // 新格式：env 对象存在
         if (dict.TryGetValue("env", out var envElement) && envElement.ValueKind == JsonValueKind.Object)
         {
-            var envDict = JsonSerializer.Deserialize<Dictionary<string, string>>(envElement.GetRawText(), _jsonOptions);
+            var envDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(envElement.GetRawText(), _jsonOptions);
             if (envDict != null)
             {
-                envDict["CLAUDE_CODE_ATTRIBUTION_HEADER"] = "0";
+                envDict["CLAUDE_CODE_ATTRIBUTION_HEADER"] = JsonSerializer.SerializeToElement("0", _jsonOptions);
                 dict["env"] = JsonSerializer.SerializeToElement(envDict, _jsonOptions);
             }
         }
@@ -216,7 +216,51 @@ public class ConfigService
                 Directory.CreateDirectory(directory);
             }
 
-            var json = JsonSerializer.Serialize(settings, _jsonOptions);
+            // 读取已存在的 settings.json，保留用户原有的非 API 配置（如 permissions、hooks、mcpServers 等）
+            var finalDict = new Dictionary<string, JsonElement>();
+            if (File.Exists(_claudeSettingsPath))
+            {
+                try
+                {
+                    var existingJson = await File.ReadAllTextAsync(_claudeSettingsPath);
+                    var existingDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(existingJson, _jsonOptions);
+                    if (existingDict != null)
+                    {
+                        finalDict = existingDict;
+                    }
+                }
+                catch
+                {
+                    // 现有文件解析异常则直接使用新设置
+                }
+            }
+
+            // 将新设置序列化为字典进行合并
+            var newSettingsJson = JsonSerializer.Serialize(settings, _jsonOptions);
+            var newSettingsDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(newSettingsJson, _jsonOptions);
+            if (newSettingsDict != null)
+            {
+                // 如果切换的目标配置没有 env，清理原有的 API 环境变量
+                if (!newSettingsDict.ContainsKey("env"))
+                {
+                    finalDict.Remove("env");
+                }
+
+                // 清理顶层可能存在的旧版 API 键，避免干扰
+                finalDict.Remove("ANTHROPIC_AUTH_TOKEN");
+                finalDict.Remove("ANTHROPIC_BASE_URL");
+                finalDict.Remove("ANTHROPIC_MODEL");
+                finalDict.Remove("ANTHROPIC_DEFAULT_HAIKU_MODEL");
+                finalDict.Remove("ANTHROPIC_DEFAULT_SONNET_MODEL");
+                finalDict.Remove("ANTHROPIC_DEFAULT_OPUS_MODEL");
+
+                foreach (var kvp in newSettingsDict)
+                {
+                    finalDict[kvp.Key] = kvp.Value;
+                }
+            }
+
+            var json = JsonSerializer.Serialize(finalDict, _jsonOptions);
             await File.WriteAllTextAsync(_claudeSettingsPath, json);
         }
         catch (Exception ex)
@@ -273,17 +317,17 @@ public class ConfigService
         try
         {
             var profiles = await LoadProfilesAsync();
-            var index = profiles.FindIndex(p => p.Name == oldName);
+            var index = profiles.FindIndex(p => p.Name.Equals(oldName, StringComparison.OrdinalIgnoreCase));
 
             if (index < 0)
             {
                 throw new Exception($"配置 '{oldName}' 不存在");
             }
 
-            // 如果修改了名称，检查新名称是否已存在
-            if (oldName != updatedProfile.Name)
+            // 如果修改了名称，检查新名称是否与其他配置重复（排除当前正在编辑的项自身，支持大小写修改）
+            if (!oldName.Equals(updatedProfile.Name, StringComparison.Ordinal))
             {
-                if (profiles.Any(p => p.Name.Equals(updatedProfile.Name, StringComparison.OrdinalIgnoreCase)))
+                if (profiles.Where((p, i) => i != index).Any(p => p.Name.Equals(updatedProfile.Name, StringComparison.OrdinalIgnoreCase)))
                 {
                     throw new Exception($"配置名称 '{updatedProfile.Name}' 已存在");
                 }
@@ -309,20 +353,19 @@ public class ConfigService
         try
         {
             var profiles = await LoadProfilesAsync();
-            var profileToDelete = profiles.FirstOrDefault(p => p.Name == profileName);
 
+            if (profiles.Count <= 1)
+            {
+                throw new Exception("不能删除最后一个配置");
+            }
+
+            var profileToDelete = profiles.FirstOrDefault(p => p.Name.Equals(profileName, StringComparison.OrdinalIgnoreCase));
             if (profileToDelete == null)
             {
                 throw new Exception($"配置 '{profileName}' 不存在");
             }
 
             profiles.Remove(profileToDelete);
-
-            if (profiles.Count == 0)
-            {
-                throw new Exception("不能删除最后一个配置");
-            }
-
             await SaveProfilesAsync(profiles);
         }
         catch (Exception ex)

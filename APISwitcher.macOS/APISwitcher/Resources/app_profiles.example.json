@@ -1,51 +1,36 @@
 [
   {
-    "id": "00000000-0000-0000-0000-000000000001",
-    "name": "示例配置 - Anthropic 官方",
-    "balanceApi": "https://api.anthropic.com/v1/balance",
-    "authMode": "header",
-    "authKey": "x-api-key",
-    "apiKey": "sk-ant-xxx",
-    "balanceJsonPath": "$.balance.amount",
-    "subscriptionApi": "",
-    "subscriptionJsonPath": "",
+    "name": "Claude官方",
     "settings": {
-      "claude": {
-        "apiKey": "sk-ant-xxx",
-        "model": "claude-sonnet-4.5"
+      "alwaysThinkingEnabled": false
+    }
+  },
+  {
+    "name": "GLM5.3",
+    "settings": {
+      "alwaysThinkingEnabled": false,
+      "env": {
+        "ANTHROPIC_AUTH_TOKEN": "your-api-key",
+        "ANTHROPIC_BASE_URL": "https://open.bigmodel.cn/api/anthropic",
+        "ANTHROPIC_DEFAULT_HAIKU_MODEL": "glm-4.5-air",
+        "ANTHROPIC_DEFAULT_SONNET_MODEL": "glm-5.2",
+        "ANTHROPIC_DEFAULT_OPUS_MODEL": "glm-5.2-turbo",
+        "API_TIMEOUT_MS": "3000000",
+        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
+        "CLAUDE_CODE_ATTRIBUTION_HEADER": "0"
       }
     }
   },
   {
-    "id": "00000000-0000-0000-0000-000000000002",
-    "name": "示例配置 - 自定义端点",
-    "balanceApi": "https://custom-api.example.com/balance",
-    "authMode": "header",
-    "authKey": "Authorization",
-    "apiKey": "Bearer YOUR_API_KEY",
-    "balanceJsonPath": "$.data.balance",
-    "subscriptionApi": "https://custom-api.example.com/subscription",
-    "subscriptionJsonPath": "$.data",
+    "name": "自定义中转",
     "settings": {
+      "alwaysThinkingEnabled": false,
       "env": {
-        "ANTHROPIC_AUTH_TOKEN": "Bearer YOUR_API_KEY",
-        "ANTHROPIC_BASE_URL": "https://custom-api.example.com/v1",
+        "ANTHROPIC_AUTH_TOKEN": "sk-your-token",
+        "ANTHROPIC_BASE_URL": "https://api.example.com",
+        "API_TIMEOUT_MS": "3000000",
+        "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1",
         "CLAUDE_CODE_ATTRIBUTION_HEADER": "0"
-      },
-      "claude": {
-        "apiKey": "sk-custom-xxx",
-        "model": "claude-sonnet-4.5",
-        "baseURL": "https://custom-api.example.com/v1"
-      },
-      "mcpServers": {
-        "filesystem": {
-          "command": "npx",
-          "args": [
-            "-y",
-            "@modelcontextprotocol/server-filesystem",
-            "/Users/username/Documents"
-          ]
-        }
       }
     }
   }

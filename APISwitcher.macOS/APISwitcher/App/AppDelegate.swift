@@ -15,4 +15,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // 关闭窗口后不退出应用（菜单栏应用常驻）
         return false
     }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag {
+            for window in sender.windows {
+                if window.canBecomeMain {
+                    window.makeKeyAndOrderFront(self)
+                    return true
+                }
+            }
+        }
+        return true
+    }
 }
